@@ -1,0 +1,3 @@
+[submodule "src/main/webapp/admin"]
+	path = src/main/webapp/admin
+	url = https://github.com/HiPhone-Chan/vue-admin.git

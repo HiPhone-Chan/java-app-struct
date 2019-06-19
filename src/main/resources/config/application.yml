@@ -1,0 +1,75 @@
+server:
+  port: 8083
+  servlet:
+    session:
+      cookie:
+        http-only: true
+spring:
+  main:
+    banner-mode: 'off'
+  application:
+    name: app
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: deferred
+  jpa:
+    open-in-view: false
+    generate-ddl: true
+    properties:
+      hibernate.jdbc.time_zone: UTC
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+  messages:
+    basename: i18n/messages
+  servlet:
+    multipart:
+      enabled: true
+  mvc:
+    favicon:
+      enabled: false
+  task:
+    execution:
+      thread-name-prefix: app-task-
+      pool:
+        core-size: 2
+        max-size: 50
+        queue-capacity: 10000
+    scheduling:
+      thread-name-prefix: app-scheduling-
+      pool:
+        size: 2
+
+app:
+  cache:
+    ehcache:
+      time-to-live-seconds: 3600
+      max-entries: 1000
+  security:
+    authentication:
+      jwt:
+        base64-secret: d0N5WXBib1huT3E5NHM2bTFCa0NEMEQzMjNNVFhsVVhqOGtUYkExNQ==
+        secret: wCyYpboXnOq94s6m1BkCD0D323MTXlUXj8kTbA15
+        token-validity-in-seconds: 86400
+        token-validity-in-seconds-for-remember-me: 2592000
+  cors:
+    allowed-origins: '*'
+    allowed-methods: GET, PUT, POST, DELETE, OPTIONS
+    allowed-headers: '*'
+    exposed-headers: "Authorization,Link,X-Total-Count"
+    allow-credentials: true
+    max-age: 1800
+  swagger:
+    title: API
+    description: API documentation
+    version: version 1.0
+    termsOfServiceUrl: http://springfox.io
+    contact:
+      name: app
+      url: null
+      email: app@qq.com
+    license: Apache License Version 2.0
+    licenseUrl: https://github.com/springfox/springfox/blob/master/LICENSE

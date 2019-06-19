@@ -1,0 +1,48 @@
+server:
+  servlet:
+    context-path: /app
+
+logging:
+  level:
+    ROOT: DEBUG
+    com.chf.app: DEBUG    
+    
+spring:
+  profiles:
+    active: dev
+    include:
+      - swagger
+  devtools:
+    restart:
+      enabled: true
+      additional-exclude: .h2.server.properties
+    livereload:
+      enabled: false # we use Webpack dev server + BrowserSync for livereload
+  jackson:
+    serialization:
+      indent-output: true
+  datasource:
+    url: jdbc:h2:file:./target/h2db/app-struct;DB_CLOSE_DELAY=-1
+    username: app
+    password: null
+#    url: jdbc:mysql://localhost:3306/app-struct?useSSL=false
+#    username: root
+#    password: 
+    hikari:
+      poolName: Hikari
+      auto-commit: false
+  jpa:
+    show-sql: false
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate.id.new_generator_mappings: true
+      hibernate.connection.provider_disables_autocommit: true
+      hibernate.cache.use_second_level_cache: false
+      hibernate.cache.use_query_cache: false
+      hibernate.generate_statistics: false
+  messages:
+    cache-duration: PT1S # 1 second, see the ISO 8601 standard
+  thymeleaf:
+    cache: false
