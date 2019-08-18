@@ -7,8 +7,16 @@ server:
 spring:
   main:
     banner-mode: 'off'
+    allow-bean-definition-overriding: true
   application:
     name: app
+  profiles:
+    # The commented value for `active` can be replaced with valid Spring profiles to load.
+    # Otherwise, it will be filled in by maven when building the JAR file
+    # Either way, it can be overridden by `--spring.profiles.active` value passed in the commandline or `-Dspring.profiles.active` set in `JAVA_OPTS`
+    active: #spring.profiles.active#
+  jmx:
+    enabled: false
   data:
     jpa:
       repositories:
@@ -51,13 +59,15 @@ app:
   security:
     authentication:
       jwt:
-        base64-secret: d0N5WXBib1huT3E5NHM2bTFCa0NEMEQzMjNNVFhsVVhqOGtUYkExNQ==
+      # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
+        base64-secret: glxxC0Yc0Pqp2qq+NAhVKEgC/mUwIi0xptBJyZxXE290YmtGY4LRj0Qdr5tcpfa1t6hbVpYf9AoB+h0NU22KhA==
         secret: wCyYpboXnOq94s6m1BkCD0D323MTXlUXj8kTbA15
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000
   cors:
     allowed-origins: '*'
-    allowed-methods: GET, PUT, POST, DELETE, OPTIONS
+#    allowed-methods: 'GET, PUT, POST, DELETE, OPTIONS'
+    allowed-methods: '*'
     allowed-headers: '*'
     exposed-headers: "Authorization,Link,X-Total-Count"
     allow-credentials: true

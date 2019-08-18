@@ -10,10 +10,16 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
+		<spring-boot.version>2.1.7.RELEASE</spring-boot.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<jjwt.version>0.10.6</jjwt.version>
 		<swagger.version>2.9.2</swagger.version>
+
+		<maven-war-plugin.version>3.2.2</maven-war-plugin.version>
+		<maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
+		<exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
+		<lifecycle-mapping.version>1.0.0</lifecycle-mapping.version>
 	</properties>
 
 	<dependencyManagement>
@@ -21,7 +27,7 @@
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
-				<version>2.1.5.RELEASE</version>
+				<version>${spring-boot.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -42,12 +48,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-tomcat</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -59,11 +59,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-cache</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 
 		<!-- secure -->
@@ -156,6 +151,7 @@
 	</dependencies>
 
 	<build>
+		<defaultGoal>spring-boot:run</defaultGoal>
 		<finalName>app</finalName>
 		<plugins>
 			<plugin>
@@ -171,6 +167,18 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<!-- <mainClass>${start-class}</mainClass> -->
+					<executable>true</executable>
+					<fork>true</fork>
+				</configuration>
 			</plugin>
 
 			<plugin>
@@ -179,28 +187,13 @@
 			</plugin>
 
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<configuration>
-					<warSourceDirectory>src/main/webapp/</warSourceDirectory>
-					<warSourceExcludes>admin/**,**/.gitignore</warSourceExcludes>
-					<failOnMissingWebXml>false</failOnMissingWebXml>
-					<webResources>
-						<resource>
-							<directory>src/main/webapp/admin/dist</directory>
-							<targetPath>admin</targetPath>
-						</resource>
-					</webResources>
-				</configuration>
-			</plugin>
-
-			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
+				<version>${exec-maven-plugin.version}</version>
 				<executions>
 					<execution>
 						<id>exec-npm-install</id>
-						<phase>prepare-package</phase>
+						<phase>generate-resources</phase>
 						<goals>
 							<goal>exec</goal>
 						</goals>
@@ -209,13 +202,13 @@
 							<arguments>
 								<argument>install</argument>
 							</arguments>
-							<workingDirectory>${basedir}/src/main/webapp/ele-admin</workingDirectory>
+							<workingDirectory>${basedir}/src/main/webapp/admin</workingDirectory>
 						</configuration>
 					</execution>
 
 					<execution>
 						<id>exec-npm-run-build</id>
-						<phase>prepare-package</phase>
+						<phase>generate-sources</phase>
 						<goals>
 							<goal>exec</goal>
 						</goals>
@@ -223,14 +216,90 @@
 							<executable>npm</executable>
 							<arguments>
 								<argument>run</argument>
-								<argument>build</argument>
+								<argument>build:prod</argument>
 							</arguments>
-							<workingDirectory>${basedir}/src/main/webapp/ele-admin</workingDirectory>
+							<workingDirectory>${basedir}/src/main/webapp/admin</workingDirectory>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>${spring-boot.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>${maven-resources-plugin.version}</version>
+					<executions>
+						<execution>
+							<id>default-resources</id>
+							<phase>validate</phase>
+							<goals>
+								<goal>copy-resources</goal>
+							</goals>
+							<configuration>
+								<outputDirectory>${project.build.directory}/classes</outputDirectory>
+								<useDefaultDelimiters>false</useDefaultDelimiters>
+								<delimiters>
+									<delimiter>#</delimiter>
+								</delimiters>
+								<resources>
+									<resource>
+										<directory>src/main/resources/</directory>
+										<filtering>true</filtering>
+										<includes>
+											<include>config/*.yml</include>
+										</includes>
+									</resource>
+									<resource>
+										<directory>src/main/resources/</directory>
+										<filtering>false</filtering>
+										<excludes>
+											<exclude>config/*.yml</exclude>
+										</excludes>
+									</resource>
+								</resources>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<!-- This plugin's configuration is used to store Eclipse m2e settings 
+						only. It has no influence on the Maven build itself. Remove when the m2e 
+						plugin can correctly bind to Maven lifecycle -->
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>${lifecycle-mapping.version}</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>exec-maven-plugin</artifactId>
+										<versionRange>${exec-maven-plugin.version}</versionRange>
+										<goals>
+											<goal>exec</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<profiles>
@@ -263,26 +332,21 @@
 		<profile>
 			<id>prod</id>
 			<dependencies>
-				<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-undertow</artifactId> 
-					</dependency> -->
+				<dependency>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-undertow</artifactId>
+				</dependency>
 			</dependencies>
 			<build>
 				<plugins>
-					<plugin>
-						<artifactId>maven-clean-plugin</artifactId>
-						<configuration>
-							<filesets>
-								<fileset>
-									<directory>target/classes/static/</directory>
-								</fileset>
-							</filesets>
-						</configuration>
-					</plugin>
+					<!-- <plugin> <artifactId>maven-clean-plugin</artifactId> <configuration> 
+						<filesets> <fileset> <directory>target/classes/static/</directory> </fileset> 
+						</filesets> </configuration> </plugin> -->
 					<plugin>
 						<groupId>org.springframework.boot</groupId>
 						<artifactId>spring-boot-maven-plugin</artifactId>
 						<configuration>
-							<mainClass>${start-class}</mainClass>
+							<!-- <mainClass>${start-class}</mainClass> -->
 							<executable>true</executable>
 						</configuration>
 						<executions>
@@ -293,10 +357,30 @@
 							</execution>
 						</executions>
 					</plugin>
+
 					<plugin>
-						<groupId>pl.project13.maven</groupId>
-						<artifactId>git-commit-id-plugin</artifactId>
+						<artifactId>maven-resources-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-resources</id>
+								<phase>process-sources</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${basedir}/target/classes/static/admin</outputDirectory>
+									<resources>
+										<resource>
+											<directory>${basedir}/src/main/webapp/admin/dist</directory>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
 					</plugin>
+
+					<!-- <plugin> <groupId>pl.project13.maven</groupId> <artifactId>git-commit-id-plugin</artifactId> 
+						</plugin> -->
 				</plugins>
 			</build>
 			<properties>
@@ -322,8 +406,18 @@
 							</execution>
 						</executions>
 						<configuration>
-							<warSourceIncludes>WEB-INF/**,META-INF/**</warSourceIncludes>
-							<failOnMissingWebXml>false</failOnMissingWebXml>
+							<configuration>
+								<warSourceDirectory>src/main/webapp/</warSourceDirectory>
+								<warSourceExcludes>admin/**,**/.gitignore</warSourceExcludes>
+								<warSourceIncludes>WEB-INF/**,META-INF/**</warSourceIncludes>
+								<failOnMissingWebXml>false</failOnMissingWebXml>
+								<webResources>
+									<resource>
+										<directory>src/main/webapp/admin/dist</directory>
+										<targetPath>admin</targetPath>
+									</resource>
+								</webResources>
+							</configuration>
 						</configuration>
 					</plugin>
 				</plugins>

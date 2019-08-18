@@ -9,9 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
@@ -19,8 +18,7 @@ import com.chf.app.config.ConfigProperties;
 import com.chf.app.constants.SystemConstants;
 import com.chf.app.utils.ProfileUtil;
 
-@ComponentScan
-@EnableAutoConfiguration
+@SpringBootApplication
 @EnableConfigurationProperties({ ConfigProperties.class })
 public class Application implements InitializingBean {
 
