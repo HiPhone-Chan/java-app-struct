@@ -13,4 +13,4 @@ To build the final jar and optimize the jwt application for production, run:
 
 To package your application as a war in order to deploy it to an application server, run:
 
-    mvn -Pprod,war clean verify
+    mvn -Pwar clean verify

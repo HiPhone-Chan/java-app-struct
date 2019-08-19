@@ -15,10 +15,11 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<jjwt.version>0.10.6</jjwt.version>
 		<swagger.version>2.9.2</swagger.version>
-
+		<!-- Plugin versions -->
 		<maven-war-plugin.version>3.2.2</maven-war-plugin.version>
 		<maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
 		<exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
+		<maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
 		<lifecycle-mapping.version>1.0.0</lifecycle-mapping.version>
 	</properties>
 
@@ -193,7 +194,7 @@
 				<executions>
 					<execution>
 						<id>exec-npm-install</id>
-						<phase>generate-resources</phase>
+						<phase>initialize</phase>
 						<goals>
 							<goal>exec</goal>
 						</goals>
@@ -223,10 +224,16 @@
 					</execution>
 				</executions>
 			</plugin>
+
 		</plugins>
 
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>${maven-clean-plugin.version}</version>
+				</plugin>
+
 				<plugin>
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-maven-plugin</artifactId>
@@ -339,9 +346,16 @@
 			</dependencies>
 			<build>
 				<plugins>
-					<!-- <plugin> <artifactId>maven-clean-plugin</artifactId> <configuration> 
-						<filesets> <fileset> <directory>target/classes/static/</directory> </fileset> 
-						</filesets> </configuration> </plugin> -->
+					<plugin>
+						<artifactId>maven-clean-plugin</artifactId>
+						<configuration>
+							<filesets>
+								<fileset>
+									<directory>target/classes/static/</directory>
+								</fileset>
+							</filesets>
+						</configuration>
+					</plugin>
 					<plugin>
 						<groupId>org.springframework.boot</groupId>
 						<artifactId>spring-boot-maven-plugin</artifactId>
@@ -384,7 +398,6 @@
 				</plugins>
 			</build>
 			<properties>
-				<!-- default Spring profiles -->
 				<spring.profiles.active>prod</spring.profiles.active>
 			</properties>
 		</profile>
@@ -406,22 +419,23 @@
 							</execution>
 						</executions>
 						<configuration>
-							<configuration>
-								<warSourceDirectory>src/main/webapp/</warSourceDirectory>
-								<warSourceExcludes>admin/**,**/.gitignore</warSourceExcludes>
-								<warSourceIncludes>WEB-INF/**,META-INF/**</warSourceIncludes>
-								<failOnMissingWebXml>false</failOnMissingWebXml>
-								<webResources>
-									<resource>
-										<directory>src/main/webapp/admin/dist</directory>
-										<targetPath>admin</targetPath>
-									</resource>
-								</webResources>
-							</configuration>
+							<warSourceDirectory>src/main/webapp/</warSourceDirectory>
+							<warSourceExcludes>admin/**,**/.gitignore</warSourceExcludes>
+							<!-- <warSourceIncludes>WEB-INF/**,META-INF/**</warSourceIncludes> -->
+							<failOnMissingWebXml>false</failOnMissingWebXml>
+							<webResources>
+								<resource>
+									<directory>src/main/webapp/admin/dist</directory>
+									<targetPath>admin</targetPath>
+								</resource>
+							</webResources>
 						</configuration>
 					</plugin>
 				</plugins>
 			</build>
+			<properties>
+				<spring.profiles.active>prod</spring.profiles.active>
+			</properties>
 		</profile>
 	</profiles>
 </project>
