@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 
@@ -78,15 +79,28 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // @formatter:off
         http.csrf().disable().addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling().authenticationEntryPoint(problemSupport).accessDeniedHandler(problemSupport).and()
-                .headers().frameOptions().disable().and().sessionManagement()
+                .exceptionHandling().authenticationEntryPoint(problemSupport).accessDeniedHandler(problemSupport)
+                .and()
+                .headers()
+                .contentSecurityPolicy(
+                        "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:")
+                .and()
+                .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
+                .and()
+                .featurePolicy(
+                        "geolocation 'none'; midi 'none'; sync-xhr 'none'; microphone 'none'; camera 'none'; magnetometer 'none'; gyroscope 'none'; speaker 'none'; fullscreen 'self'; payment 'none'")
+                .and()
+                .frameOptions().deny().and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
                 .antMatchers("/resource/**").permitAll().antMatchers("/openapi/**").permitAll()
                 .antMatchers("/api/authenticate").permitAll().antMatchers("/api/**").authenticated()
                 .antMatchers("/management/health").permitAll().antMatchers("/management/info").permitAll()
                 .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN).and()
+                .httpBasic().and()
                 .apply(new JWTConfigurer(tokenProvider));
+        // @formatter:on
     }
 
 }

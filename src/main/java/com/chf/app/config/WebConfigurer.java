@@ -26,7 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
-import com.chf.app.config.h2.H2ConfigurationHelper;
+import com.chf.app.config.database.H2ConfigurationHelper;
 import com.chf.app.constants.SystemConstants;
 import com.chf.app.web.filter.CachingHttpHeadersFilter;
 import com.chf.app.web.support.PutAwareCommonsMultipartResolver;

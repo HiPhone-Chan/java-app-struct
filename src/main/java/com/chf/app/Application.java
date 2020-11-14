@@ -5,9 +5,10 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -20,7 +21,7 @@ import com.chf.app.utils.ProfileUtil;
 
 @SpringBootApplication
 @EnableConfigurationProperties({ ConfigProperties.class })
-public class Application implements InitializingBean {
+public class Application {
 
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
@@ -30,8 +31,8 @@ public class Application implements InitializingBean {
         this.env = env;
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
+    @PostConstruct
+    public void initApplication() throws Exception {
         Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
         if (activeProfiles.contains(SystemConstants.PROFILE_DEVELOPMENT)
                 && activeProfiles.contains(SystemConstants.PROFILE_PRODUCTION)) {

@@ -5,6 +5,8 @@ import javax.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.web.cors.CorsConfiguration;
 
+import springfox.documentation.service.Contact;
+
 @ConfigurationProperties(prefix = "app")
 public class ConfigProperties {
 
@@ -45,6 +47,8 @@ public class ConfigProperties {
         private String license;
 
         private String licenseUrl;
+
+        private Contact contact;
 
         public String getTitle() {
             return title;
@@ -93,6 +97,15 @@ public class ConfigProperties {
         public void setLicenseUrl(String licenseUrl) {
             this.licenseUrl = licenseUrl;
         }
+
+        public Contact getContact() {
+            return contact;
+        }
+
+        public void setContact(Contact contact) {
+            this.contact = contact;
+        }
+
     }
 
     public static class Security {

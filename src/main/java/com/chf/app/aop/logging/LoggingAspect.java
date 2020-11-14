@@ -37,8 +37,7 @@ public class LoggingAspect {
     }
 
     /**
-     * Pointcut that matches all Spring beans in the application's main
-     * packages.
+     * Pointcut that matches all Spring beans in the application's main packages.
      */
     @Pointcut("within(com.chf.app.repository..*) || within(com.chf.app.service..*) || within(com.chf.app.web..*)")
     public void loggingPointcut() {
@@ -47,10 +46,8 @@ public class LoggingAspect {
     /**
      * Advice that logs methods throwing exceptions.
      *
-     * @param joinPoint
-     *            join point for advice
-     * @param e
-     *            exception
+     * @param joinPoint join point for advice
+     * @param e         exception
      */
     @AfterThrowing(pointcut = "springBeanPointcut() && loggingPointcut()", throwing = "e")
     public void logAfterThrowing(JoinPoint joinPoint, Throwable e) {
@@ -71,11 +68,9 @@ public class LoggingAspect {
     /**
      * Advice that logs when a method is entered and exited.
      *
-     * @param joinPoint
-     *            join point for advice
+     * @param joinPoint join point for advice
      * @return result
-     * @throws Throwable
-     *             throws IllegalArgumentException
+     * @throws Throwable throws IllegalArgumentException
      */
     @Around("springBeanPointcut()() && loggingPointcut()")
     public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {

@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package com.chf.app.config.h2;
+package com.chf.app.config.database;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
