@@ -1,4 +1,8 @@
-package com.chf.app.config;
+package com.chf.app.config.properties;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -16,7 +20,17 @@ public class ConfigProperties {
 
     private final Security security = new Security();
 
+    private final Http http = new Http();
+
     private final Cache cache = new Cache();
+
+    private final Gateway gateway = new Gateway();
+
+    private final AuditEvents auditEvents = new AuditEvents();
+
+    private final BasePath basePath = new BasePath();
+    // 系统配置参数默认值
+    private final Map<String, Object> sysParam = new HashMap<>();
 
     public Swagger getSwagger() {
         return swagger;
@@ -30,8 +44,28 @@ public class ConfigProperties {
         return security;
     }
 
+    public Http getHttp() {
+        return http;
+    }
+
     public Cache getCache() {
         return cache;
+    }
+
+    public Gateway getGateway() {
+        return gateway;
+    }
+
+    public AuditEvents getAuditEvents() {
+        return auditEvents;
+    }
+
+    public BasePath getBasePath() {
+        return basePath;
+    }
+
+    public Map<String, Object> getSysParam() {
+        return sysParam;
     }
 
     public static class Swagger {
@@ -105,7 +139,6 @@ public class ConfigProperties {
         public void setContact(Contact contact) {
             this.contact = contact;
         }
-
     }
 
     public static class Security {
@@ -277,11 +310,35 @@ public class ConfigProperties {
         }
     }
 
+    public static class Http {
+
+        private final Cache cache = new Cache();
+
+        public Cache getCache() {
+            return cache;
+        }
+
+        public static class Cache {
+
+            private int timeToLiveInDays = ConfigDefaults.Http.Cache.timeToLiveInDays;
+
+            public int getTimeToLiveInDays() {
+                return timeToLiveInDays;
+            }
+
+            public void setTimeToLiveInDays(int timeToLiveInDays) {
+                this.timeToLiveInDays = timeToLiveInDays;
+            }
+        }
+    }
+
     public static class Cache {
 
         private final Hazelcast hazelcast = new Hazelcast();
 
         private final Ehcache ehcache = new Ehcache();
+
+        private final Redis redis = new Redis();
 
         public Hazelcast getHazelcast() {
             return hazelcast;
@@ -289,6 +346,10 @@ public class ConfigProperties {
 
         public Ehcache getEhcache() {
             return ehcache;
+        }
+
+        public Redis getRedis() {
+            return redis;
         }
 
         public static class Hazelcast {
@@ -337,6 +398,163 @@ public class ConfigProperties {
             }
         }
 
+        public static class Redis {
+            private String[] server = ConfigDefaults.Cache.Redis.server;
+            private int expiration = ConfigDefaults.Cache.Redis.expiration;
+            private boolean cluster = ConfigDefaults.Cache.Redis.cluster;
+            private int connectionPoolSize = ConfigDefaults.Cache.Redis.connectionPoolSize;
+            private int connectionMinimumIdleSize = ConfigDefaults.Cache.Redis.connectionMinimumIdleSize;
+            private int subscriptionConnectionPoolSize = ConfigDefaults.Cache.Redis.subscriptionConnectionPoolSize;
+            private int subscriptionConnectionMinimumIdleSize = ConfigDefaults.Cache.Redis.subscriptionConnectionMinimumIdleSize;
+
+            public String[] getServer() {
+                return server;
+            }
+
+            public void setServer(String[] server) {
+                this.server = server;
+            }
+
+            public int getExpiration() {
+                return expiration;
+            }
+
+            public void setExpiration(int expiration) {
+                this.expiration = expiration;
+            }
+
+            public boolean isCluster() {
+                return cluster;
+            }
+
+            public void setCluster(boolean cluster) {
+                this.cluster = cluster;
+            }
+
+            public int getConnectionPoolSize() {
+                return connectionPoolSize;
+            }
+
+            public Redis setConnectionPoolSize(int connectionPoolSize) {
+                this.connectionPoolSize = connectionPoolSize;
+                return this;
+            }
+
+            public int getConnectionMinimumIdleSize() {
+                return connectionMinimumIdleSize;
+            }
+
+            public Redis setConnectionMinimumIdleSize(int connectionMinimumIdleSize) {
+                this.connectionMinimumIdleSize = connectionMinimumIdleSize;
+                return this;
+            }
+
+            public int getSubscriptionConnectionPoolSize() {
+                return subscriptionConnectionPoolSize;
+            }
+
+            public Redis setSubscriptionConnectionPoolSize(int subscriptionConnectionPoolSize) {
+                this.subscriptionConnectionPoolSize = subscriptionConnectionPoolSize;
+                return this;
+            }
+
+            public int getSubscriptionConnectionMinimumIdleSize() {
+                return subscriptionConnectionMinimumIdleSize;
+            }
+
+            public Redis setSubscriptionConnectionMinimumIdleSize(int subscriptionConnectionMinimumIdleSize) {
+                this.subscriptionConnectionMinimumIdleSize = subscriptionConnectionMinimumIdleSize;
+                return this;
+            }
+        }
+
     }
 
+    public static class Gateway {
+
+        private final RateLimiting rateLimiting = new RateLimiting();
+
+        public RateLimiting getRateLimiting() {
+            return rateLimiting;
+        }
+
+        private Map<String, List<String>> authorizedMicroservicesEndpoints = ConfigDefaults.Gateway.authorizedMicroservicesEndpoints;
+
+        public Map<String, List<String>> getAuthorizedMicroservicesEndpoints() {
+            return authorizedMicroservicesEndpoints;
+        }
+
+        public void setAuthorizedMicroservicesEndpoints(Map<String, List<String>> authorizedMicroservicesEndpoints) {
+            this.authorizedMicroservicesEndpoints = authorizedMicroservicesEndpoints;
+        }
+
+        public static class RateLimiting {
+
+            private boolean enabled = ConfigDefaults.Gateway.RateLimiting.enabled;
+
+            private long limit = ConfigDefaults.Gateway.RateLimiting.limit;
+
+            private int durationInSeconds = ConfigDefaults.Gateway.RateLimiting.durationInSeconds;
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+
+            public long getLimit() {
+                return this.limit;
+            }
+
+            public void setLimit(long limit) {
+                this.limit = limit;
+            }
+
+            public int getDurationInSeconds() {
+                return durationInSeconds;
+            }
+
+            public void setDurationInSeconds(int durationInSeconds) {
+                this.durationInSeconds = durationInSeconds;
+            }
+        }
+    }
+
+    public static class AuditEvents {
+        private int retentionPeriod = ConfigDefaults.AuditEvents.retentionPeriod;
+
+        public int getRetentionPeriod() {
+            return retentionPeriod;
+        }
+
+        public void setRetentionPeriod(int retentionPeriod) {
+            this.retentionPeriod = retentionPeriod;
+        }
+    }
+
+    public static class BasePath {
+
+        private String local;
+
+        private String web;
+
+        public String getLocal() {
+            return local;
+        }
+
+        public void setLocal(String local) {
+            this.local = local;
+        }
+
+        public String getWeb() {
+            return web;
+        }
+
+        public void setWeb(String web) {
+            this.web = web;
+        }
+
+    }
 }

@@ -1,7 +1,5 @@
 package com.chf.app.constants;
 
-import com.chf.app.Application;
-
 public interface SystemConstants {
 
     // String BASE_PACKAGE_NAME = Application.class.getPackage().getName();
@@ -9,9 +7,7 @@ public interface SystemConstants {
 
     String LOGIN_REGEX = "^[_'.@A-Za-z0-9-]*$";
 
-    String SYSTEM_ACCOUNT = "system";
-
-    String ANONYMOUS_USER = "anonymoususer";
+    String SYSTEM = "system";
 
     String LANG = "zh_cn";
 

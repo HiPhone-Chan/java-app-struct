@@ -4,18 +4,19 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.env.Environment;
-import org.springframework.util.StringUtils;
 
-import com.chf.app.config.ConfigProperties;
+import com.chf.app.config.properties.ConfigProperties;
 import com.chf.app.constants.SystemConstants;
 import com.chf.app.utils.ProfileUtil;
 
@@ -59,10 +60,8 @@ public class Application {
             protocol = "https";
         }
         String serverPort = env.getProperty("server.port");
-        String contextPath = env.getProperty("server.servlet.context-path");
-        if (StringUtils.isEmpty(contextPath)) {
-            contextPath = "/";
-        }
+        String contextPath = Optional.ofNullable(env.getProperty("server.servlet.context-path"))
+                .filter(StringUtils::isNotBlank).orElse("/");
 
         String hostAddress = "localhost";
         try {

@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.http.MediaType;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -27,6 +28,7 @@ import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import com.chf.app.config.database.H2ConfigurationHelper;
+import com.chf.app.config.properties.ConfigProperties;
 import com.chf.app.constants.SystemConstants;
 import com.chf.app.web.filter.CachingHttpHeadersFilter;
 import com.chf.app.web.support.PutAwareCommonsMultipartResolver;
@@ -91,9 +93,13 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = configProperties.getCors();
-        if (config.getAllowedOrigins() != null && !config.getAllowedOrigins().isEmpty()) {
+        if (!CollectionUtils.isEmpty(config.getAllowedOrigins())) {
             log.debug("Registering CORS filter");
             source.registerCorsConfiguration("/api/**", config);
+            source.registerCorsConfiguration("/management/**", config);
+            source.registerCorsConfiguration("/v3/api-docs", config);
+            source.registerCorsConfiguration("/swagger-resources", config);
+            source.registerCorsConfiguration("/swagger-ui/**", config);
         }
         return new CorsFilter(source);
     }

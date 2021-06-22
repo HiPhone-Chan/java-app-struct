@@ -2,7 +2,7 @@
 logging:
   level:
     ROOT: INFO
-    com.chf.app: INFO
+    "[com.chf.app]": INFO
 
 server:
   compression:
@@ -35,8 +35,8 @@ spring:
     hibernate:
       ddl-auto: update
     properties:
-      hibernate.id.new_generator_mappings: true
-      hibernate.connection.provider_disables_autocommit: true
-      hibernate.cache.use_second_level_cache: false
-      hibernate.cache.use_query_cache: false
-      hibernate.generate_statistics: false
+      "[hibernate.id.new_generator_mappings]": true
+      "[hibernate.connection.provider_disables_autocommit]": true
+      "[hibernate.cache.use_second_level_cache]": false
+      "[hibernate.cache.use_query_cache]": false
+      "[hibernate.generate_statistics]": false

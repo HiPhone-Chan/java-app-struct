@@ -1,16 +1,27 @@
 package com.chf.app.web.errors;
 
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConversionException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -22,9 +33,12 @@ import org.zalando.problem.DefaultProblem;
 import org.zalando.problem.Problem;
 import org.zalando.problem.ProblemBuilder;
 import org.zalando.problem.Status;
+import org.zalando.problem.StatusType;
 import org.zalando.problem.spring.web.advice.ProblemHandling;
 import org.zalando.problem.violations.ConstraintViolationProblem;
 
+import com.chf.app.constants.ErrorCodeContants;
+import com.chf.app.constants.SystemConstants;
 import com.chf.app.exception.ServiceException;
 
 /**
@@ -40,6 +54,12 @@ public class ExceptionTranslator implements ProblemHandling {
     private static final String MESSAGE_KEY = "message";
     private static final String PATH_KEY = "path";
     private static final String VIOLATIONS_KEY = "violations";
+    
+    private final Environment env;
+
+    public ExceptionTranslator(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public ResponseEntity<Problem> process(@Nullable ResponseEntity<Problem> entity, NativeWebRequest request) {
@@ -90,6 +110,20 @@ public class ExceptionTranslator implements ProblemHandling {
         return new ErrorVM(ex.getCode(), ex.getMessage());
     }
 
+    @ExceptionHandler({ BadCredentialsException.class })
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ResponseBody
+    public ErrorVM processLoginException(Exception ex) {
+        return new ErrorVM(ErrorCodeContants.UNAUTHORIZED, ex.getMessage());
+    }
+
+    @ExceptionHandler({ InsufficientAuthenticationException.class, AccessDeniedException.class })
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseBody
+    public ErrorVM processAccessDeniedException(Exception ex) {
+        return new ErrorVM(ErrorCodeContants.ACCESS_DENIED, ex.getMessage());
+    }
+
     @ExceptionHandler
     public ResponseEntity<Problem> handleNoSuchElementException(NoSuchElementException ex, NativeWebRequest request) {
         Problem problem = Problem.builder().withStatus(Status.NOT_FOUND)
@@ -102,5 +136,62 @@ public class ExceptionTranslator implements ProblemHandling {
         Problem problem = Problem.builder().withStatus(Status.CONFLICT)
                 .with(MESSAGE_KEY, ErrorConstants.ERR_CONCURRENCY_FAILURE).build();
         return create(ex, problem, request);
+    }
+    
+    @Override
+    public ProblemBuilder prepare(final Throwable throwable, final StatusType status, final URI type) {
+        Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
+
+        if (activeProfiles.contains(SystemConstants.PROFILE_PRODUCTION)) {
+            if (throwable instanceof HttpMessageConversionException) {
+                return Problem
+                    .builder()
+                    .withType(type)
+                    .withTitle(status.getReasonPhrase())
+                    .withStatus(status)
+                    .withDetail("Unable to convert http message")
+                    .withCause(
+                        Optional.ofNullable(throwable.getCause()).filter(cause -> isCausalChainsEnabled()).map(this::toProblem).orElse(null)
+                    );
+            }
+            if (throwable instanceof DataAccessException) {
+                return Problem
+                    .builder()
+                    .withType(type)
+                    .withTitle(status.getReasonPhrase())
+                    .withStatus(status)
+                    .withDetail("Failure during data access")
+                    .withCause(
+                        Optional.ofNullable(throwable.getCause()).filter(cause -> isCausalChainsEnabled()).map(this::toProblem).orElse(null)
+                    );
+            }
+            if (containsPackageName(throwable.getMessage())) {
+                return Problem
+                    .builder()
+                    .withType(type)
+                    .withTitle(status.getReasonPhrase())
+                    .withStatus(status)
+                    .withDetail("Unexpected runtime exception")
+                    .withCause(
+                        Optional.ofNullable(throwable.getCause()).filter(cause -> isCausalChainsEnabled()).map(this::toProblem).orElse(null)
+                    );
+            }
+        }
+
+        return Problem
+            .builder()
+            .withType(type)
+            .withTitle(status.getReasonPhrase())
+            .withStatus(status)
+            .withDetail(throwable.getMessage())
+            .withCause(
+                Optional.ofNullable(throwable.getCause()).filter(cause -> isCausalChainsEnabled()).map(this::toProblem).orElse(null)
+            );
+    }
+
+    private boolean containsPackageName(String message) {
+        // This list is for sure not complete
+        return StringUtils.containsAny(message, "org.", "java.", "net.", "javax.", "com.", "io.", "de.",
+                SystemConstants.BASE_PACKAGE_NAME);
     }
 }

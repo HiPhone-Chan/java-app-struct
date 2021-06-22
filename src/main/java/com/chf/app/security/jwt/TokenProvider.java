@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -17,10 +18,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-import com.chf.app.config.ConfigProperties;
-import com.chf.app.config.ConfigProperties.Security.Authentication.Jwt;
+import com.chf.app.config.properties.ConfigProperties;
+import com.chf.app.config.properties.ConfigProperties.Security.Authentication.Jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
