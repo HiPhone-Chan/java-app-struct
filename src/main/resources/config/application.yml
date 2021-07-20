@@ -1,9 +1,17 @@
-server:
-  port: 8083
-  servlet:
-    session:
-      cookie:
-        http-only: true
+management:
+  endpoints:
+    web:
+      base-path: /management
+      exposure:
+        include:
+          ['configprops', 'env', 'health', 'info', 'jhimetrics', 'logfile', 'loggers', 'prometheus', 'threaddump', 'caches', 'liquibase']
+  endpoint:
+    health:
+      show-details: when-authorized
+      roles: 'ROLE_ADMIN'
+      probes:
+        enabled: true
+
 spring:
   main:
     banner-mode: 'off'
@@ -15,6 +23,10 @@ spring:
     # Otherwise, it will be filled in by maven when building the JAR file
     # Either way, it can be overridden by `--spring.profiles.active` value passed in the commandline or `-Dspring.profiles.active` set in `JAVA_OPTS`
     active: #spring.profiles.active#
+    group:
+      dev:
+        - dev
+        - api-docs
   jmx:
     enabled: false
   data:
@@ -26,6 +38,17 @@ spring:
     generate-ddl: true
     properties:
       "[hibernate.jdbc.time_zone]": UTC
+      "[hibernate.id.new_generator_mappings]": true
+      "[hibernate.connection.provider_disables_autocommit]": true
+#      "[hibernate.cache.use_second_level_cache]": true
+#      "[hibernate.cache.use_query_cache]": false
+      "[hibernate.generate_statistics]": false
+      # modify batch size as necessary
+      "[hibernate.jdbc.batch_size]": 25
+      "[hibernate.order_inserts]": true
+      "[hibernate.order_updates]": true
+      "[hibernate.query.fail_on_pagination_over_collection_fetch]": true
+      "[hibernate.query.in_clause_parameter_padding]": true
     hibernate:
       ddl-auto: none
       naming:
@@ -48,11 +71,15 @@ spring:
       pool:
         size: 2
 
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+
 app:
-  cache:
-    ehcache:
-      time-to-live-seconds: 3600
-      max-entries: 1000
+  clientApp:
+    name: 'app'
   security:
     authentication:
       jwt:
@@ -61,22 +88,16 @@ app:
         secret: wCyYpboXnOq94s6m1BkCD0D323MTXlUXj8kTbA15
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000
-  cors:
-    allowed-origins: '*'
-#    allowed-methods: 'GET, PUT, POST, DELETE, OPTIONS'
-    allowed-methods: '*'
-    allowed-headers: '*'
-    exposed-headers: "Authorization,Link,X-Total-Count"
-    allow-credentials: true
-    max-age: 1800
-  swagger:
+    content-security-policy: "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
+  api-docs:
+    default-include-pattern: ${server.servlet.context-path:}/api/.*
+    management-include-pattern: ${server.servlet.context-path:}/management/.*
     title: API
     description: API documentation
-    version: version 1.0
-    termsOfServiceUrl: http://springfox.io
-    contact:
-      name: app
-      url: null
-      email: app@qq.com
-    license: Apache License Version 2.0
-    licenseUrl: https://github.com/springfox/springfox/blob/master/LICENSE
+    version: 0.0.1
+    terms-of-service-url:
+    contact-name:
+    contact-url:
+    contact-email:
+    license: unlicensed
+    license-url:

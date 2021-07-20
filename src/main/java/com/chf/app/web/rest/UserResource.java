@@ -21,13 +21,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,13 +38,14 @@ import com.chf.app.domain.User;
 import com.chf.app.exception.ServiceException;
 import com.chf.app.repository.UserRepository;
 import com.chf.app.service.UserService;
+import com.chf.app.service.dto.AdminUserDTO;
 import com.chf.app.service.dto.PasswordChangeDTO;
 import com.chf.app.service.dto.UserDTO;
 import com.chf.app.web.util.ResponseUtil;
 import com.chf.app.web.vm.ManagedUserVM;
 
 @RestController
-@Transactional
+@RequestMapping("/api/admin")
 public class UserResource {
 
     private final Logger log = LoggerFactory.getLogger(UserResource.class);
@@ -58,9 +59,9 @@ public class UserResource {
         this.userRepository = userRepository;
     }
 
-    @PostMapping("/api/user")
+    @PostMapping("/user")
     @Secured(ADMIN)
-    public User createUser(@Valid @RequestBody UserDTO userDTO) throws URISyntaxException {
+    public User createUser(@Valid @RequestBody AdminUserDTO userDTO) throws URISyntaxException {
         log.debug("REST request to save User : {}", userDTO);
 
         if (userDTO.getId() != null) {
@@ -72,9 +73,9 @@ public class UserResource {
         return newUser;
     }
 
-    @PutMapping("/api/user")
+    @PutMapping("/user")
     @Secured(ADMIN)
-    public ResponseEntity<UserDTO> updateUser(@Valid @RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> updateUser(@Valid @RequestBody AdminUserDTO userDTO) {
         log.debug("REST request to update User : {}", userDTO);
         Optional<User> existingUser = userRepository.findOneByLogin(userDTO.getLogin().toLowerCase());
         if (existingUser.isPresent() && (!existingUser.get().getId().equals(userDTO.getId()))) {
@@ -85,7 +86,7 @@ public class UserResource {
         return ResponseUtil.wrapOrNotFound(updatedUser);
     }
 
-    @PostMapping("/api/user/change-password/{login:" + SystemConstants.LOGIN_REGEX + "}")
+    @PostMapping("/user/change-password/{login:" + SystemConstants.LOGIN_REGEX + "}")
     @Secured(ADMIN)
     public void changePassword(@PathVariable String login, @RequestBody PasswordChangeDTO passwordChangeDTO) {
         if (!ManagedUserVM.checkPasswordLength(passwordChangeDTO.getNewPassword())) {
@@ -94,15 +95,15 @@ public class UserResource {
         userService.changePassword(login, passwordChangeDTO.getCurrentPassword(), passwordChangeDTO.getNewPassword());
     }
 
-    @GetMapping("/api/user/authorities")
+    @GetMapping("/user/authorities")
     @Secured(ADMIN)
     public List<String> getAuthorities() {
         return userService.getAuthorities();
     }
 
-    @GetMapping("/api/users")
+    @GetMapping("/users")
     @Secured(ADMIN)
-    public Page<UserDTO> getUsers(Pageable pageable,
+    public ResponseEntity<List<AdminUserDTO>> getUsers(Pageable pageable,
             @RequestParam(name = "authority", required = false) String authority) {
         Specification<User> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> andList = new ArrayList<>();
@@ -116,25 +117,28 @@ public class UserResource {
             query.where(criteriaBuilder.and(andList.toArray(new Predicate[andList.size()])));
             return query.getRestriction();
         };
-        return userService.getAllManagedUsers(spec, pageable);
+        final Page<AdminUserDTO> page = userService.getAllManagedUsers(spec, pageable);
+        return ResponseUtil.wrapPage(page);
     }
 
-    @GetMapping("/api/users/{login:" + SystemConstants.LOGIN_REGEX + "}")
+    @GetMapping("/users/{login:" + SystemConstants.LOGIN_REGEX + "}")
     @Secured(ADMIN)
     public ResponseEntity<UserDTO> getUser(@PathVariable String login) {
         log.debug("REST request to get User : {}", login);
         return ResponseUtil.wrapOrNotFound(userService.getUserWithAuthoritiesByLogin(login).map(UserDTO::new));
     }
 
-    @DeleteMapping("/api/user/{login:" + SystemConstants.LOGIN_REGEX + "}")
+    @DeleteMapping("/user/{login:" + SystemConstants.LOGIN_REGEX + "}")
     @Secured(ADMIN)
     public void deleteUser(@PathVariable String login) {
         log.debug("REST request to delete User: {}", login);
         userService.deleteUser(login);
     }
 
-    @GetMapping("/openapi/user/check/{login:" + SystemConstants.LOGIN_REGEX + "}")
+    @GetMapping("/user/check/{login:" + SystemConstants.LOGIN_REGEX + "}")
+    @Secured(ADMIN)
     public boolean checkLogin(@PathVariable String login) {
         return userRepository.existsByLogin(login);
     }
+
 }

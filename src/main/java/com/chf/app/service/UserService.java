@@ -32,6 +32,7 @@ import com.chf.app.exception.ServiceException;
 import com.chf.app.repository.AuthorityRepository;
 import com.chf.app.repository.UserRepository;
 import com.chf.app.security.SecurityUtils;
+import com.chf.app.service.dto.AdminUserDTO;
 import com.chf.app.service.dto.UserDTO;
 import com.chf.app.utils.RandomUtil;
 
@@ -53,7 +54,7 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public User createUser(UserDTO userDTO) {
+    public User createUser(AdminUserDTO userDTO) {
         User user = new User();
         String login = userDTO.getLogin().toLowerCase(Locale.ENGLISH);
         user.setLogin(login);
@@ -83,7 +84,7 @@ public class UserService {
         return user;
     }
 
-    public Optional<UserDTO> updateUser(UserDTO userDTO) {
+    public Optional<UserDTO> updateUser(AdminUserDTO userDTO) {
         return Optional.of(userRepository.findById(userDTO.getId())).filter(Optional::isPresent).map(Optional::get)
                 .map(user -> {
                     user.setLogin(userDTO.getLogin().toLowerCase());
@@ -116,7 +117,6 @@ public class UserService {
     }
 
     public void deleteUser(String login) {
-        SecurityUtils.isCurrentUserInRole("");
         userRepository.findOneByLogin(login).ifPresent(user -> {
             if (isUserInRole(user, AuthoritiesConstants.ADMIN)) {
                 log.warn("Cannot delete admin user: {}", user);
@@ -156,13 +156,18 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserDTO> getAllManagedUsers(Specification<User> spec, Pageable pageable) {
-        return userRepository.findAll(spec, pageable).map(UserDTO::new);
+    public Page<AdminUserDTO> getAllManagedUsers(Specification<User> spec, Pageable pageable) {
+        return userRepository.findAll(spec, pageable).map(AdminUserDTO::new);
     }
 
     @Transactional(readOnly = true)
     public Page<UserDTO> getAllManagedUsers(Pageable pageable) {
         return userRepository.findAll(pageable).map(UserDTO::new);
+    }
+    
+    @Transactional(readOnly = true)
+    public Page<UserDTO> getAllPublicUsers(Pageable pageable) {
+        return userRepository.findAllByIdNotNullAndActivatedIsTrue(pageable).map(UserDTO::new);
     }
 
     @Transactional(readOnly = true)

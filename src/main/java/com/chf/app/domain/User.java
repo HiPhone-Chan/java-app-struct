@@ -197,7 +197,7 @@ public class User extends AbstractAuditingEntity {
         this.imageUrl = imageUrl;
     }
 
-    public boolean getActivated() {
+    public boolean isActivated() {
         return activated;
     }
 

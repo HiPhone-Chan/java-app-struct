@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import com.chf.app.config.properties.ConfigProperties;
-import com.chf.app.config.properties.ConfigProperties.Swagger;
+import com.chf.app.config.properties.ConfigProperties.ApiDocs;
 import com.chf.app.constants.SystemConstants;
 import com.chf.app.security.jwt.JWTFilter;
 
@@ -44,9 +44,9 @@ public class OpenApiConfiguration {
     }
 
     private ApiInfo apiInfo() {
-        Swagger swagger = configProperties.getSwagger();
+        ApiDocs swagger = configProperties.getApiDocs();
         return new ApiInfoBuilder().title(swagger.getTitle()).description(swagger.getDescription())
-                .contact(swagger.getContact()).version(swagger.getVersion()).build();
+                .version(swagger.getVersion()).build();
     }
 
     private List<SecurityScheme> auth() {

@@ -4,12 +4,6 @@ logging:
     ROOT: INFO
     "[com.chf.app]": INFO
 
-server:
-  compression:
-    enabled: true
-    mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
-    min-response-size: 1024
-
 spring:
   devtools:
     restart:
@@ -17,7 +11,7 @@ spring:
     livereload:
       enabled: false
   datasource:
-    url: jdbc:mysql://localhost:3306/app-struct?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/app-struct?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true
     username: root
     password: root
     hikari:
@@ -34,9 +28,19 @@ spring:
     generate-ddl: true
     hibernate:
       ddl-auto: update
-    properties:
-      "[hibernate.id.new_generator_mappings]": true
-      "[hibernate.connection.provider_disables_autocommit]": true
-      "[hibernate.cache.use_second_level_cache]": false
-      "[hibernate.cache.use_query_cache]": false
-      "[hibernate.generate_statistics]": false
+
+server:
+  shutdown: graceful
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
+    min-response-size: 1024
+    
+app:
+  http:
+    cache: # Used by the CachingHttpHeadersFilter
+      timeToLiveInDays: 1461
+  cache: # Cache configuration
+    ehcache: # Ehcache configuration
+      time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
+      max-entries: 1000 # Number of objects in each cache entry

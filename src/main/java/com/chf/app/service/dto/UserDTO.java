@@ -1,14 +1,9 @@
 package com.chf.app.service.dto;
 
-import java.time.Instant;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
-import com.chf.app.domain.Authority;
 import com.chf.app.domain.User;
 
 public class UserDTO {
@@ -37,34 +32,21 @@ public class UserDTO {
     @Size(max = 256)
     private String imageUrl;
 
-    private boolean activated = false;
-
     @Size(min = 2, max = 5)
     private String langKey;
-
-    private String createdBy;
-
-    private Instant createdDate;
-
-    private String lastModifiedBy;
-
-    private Instant lastModifiedDate;
-
-    private Set<String> authorities;
 
     public UserDTO() {
     }
 
     public UserDTO(User user) {
         this(user.getId(), user.getLogin(), user.getNickName(), user.getFirstName(), user.getLastName(),
-                user.getEmail(), user.getMobile(), user.getImageUrl(), user.getActivated(), user.getLangKey(),
-                user.getCreatedBy(), user.getCreatedDate(), user.getLastModifiedBy(), user.getLastModifiedDate(),
-                user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet()));
+                user.getEmail(), user.getMobile(), user.getImageUrl(), user.getLangKey());
     }
 
-    public UserDTO(Long id, String login, String nickName, String firstName, String lastName, String email,
-            String mobile, String imageUrl, boolean activated, String langKey, String createdBy, Instant createdDate,
-            String lastModifiedBy, Instant lastModifiedDate, Set<String> authorities) {
+    public UserDTO(Long id, @NotBlank @Size(min = 1, max = 50) String login, @Size(max = 50) String nickName,
+            @Size(max = 50) String firstName, @Size(max = 50) String lastName,
+            @Email @Size(min = 5, max = 100) String email, String mobile, @Size(max = 256) String imageUrl,
+            @Size(min = 2, max = 5) String langKey) {
         super();
         this.id = id;
         this.login = login;
@@ -74,13 +56,7 @@ public class UserDTO {
         this.email = email;
         this.mobile = mobile;
         this.imageUrl = imageUrl;
-        this.activated = activated;
         this.langKey = langKey;
-        this.createdBy = createdBy;
-        this.createdDate = createdDate;
-        this.lastModifiedBy = lastModifiedBy;
-        this.lastModifiedDate = lastModifiedDate;
-        this.authorities = authorities;
     }
 
     public User toUser() {
@@ -159,14 +135,6 @@ public class UserDTO {
         this.imageUrl = imageUrl;
     }
 
-    public boolean isActivated() {
-        return activated;
-    }
-
-    public void setActivated(boolean activated) {
-        this.activated = activated;
-    }
-
     public String getLangKey() {
         return langKey;
     }
@@ -175,51 +143,10 @@ public class UserDTO {
         this.langKey = langKey;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Instant getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Instant createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public String getLastModifiedBy() {
-        return lastModifiedBy;
-    }
-
-    public void setLastModifiedBy(String lastModifiedBy) {
-        this.lastModifiedBy = lastModifiedBy;
-    }
-
-    public Instant getLastModifiedDate() {
-        return lastModifiedDate;
-    }
-
-    public void setLastModifiedDate(Instant lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
-    }
-
-    public Set<String> getAuthorities() {
-        return authorities;
-    }
-
-    public void setAuthorities(Set<String> authorities) {
-        this.authorities = authorities;
-    }
-
     @Override
     public String toString() {
-        return "UserVM [id=" + id + ", login=" + login + ", firstName=" + firstName + ", lastName=" + lastName
-                + ", email=" + email + ", imageUrl=" + imageUrl + ", activated=" + activated + ", langKey=" + langKey
-                + ", createdBy=" + createdBy + ", createdDate=" + createdDate + ", lastModifiedBy=" + lastModifiedBy
-                + ", lastModifiedDate=" + lastModifiedDate + ", authorities=" + authorities + "]";
+        return "UserDTO [id=" + id + ", login=" + login + ", nickName=" + nickName + ", firstName=" + firstName
+                + ", lastName=" + lastName + ", email=" + email + ", mobile=" + mobile + ", imageUrl=" + imageUrl
+                + ", langKey=" + langKey + "]";
     }
 }

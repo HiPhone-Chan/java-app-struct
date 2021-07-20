@@ -23,9 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * <p>JHipsterDefaults interface.</p>
- */
 public interface ConfigDefaults {
 
     interface Async {
@@ -108,7 +105,7 @@ public interface ConfigDefaults {
         }
 
         interface Redis {
-            String[] server = {"redis://localhost:6379"};
+            String[] server = { "redis://localhost:6379" };
             int expiration = 300; // 5 minutes
             boolean cluster = false;
             int connectionPoolSize = 64; // default as in redisson
@@ -125,6 +122,8 @@ public interface ConfigDefaults {
     }
 
     interface Security {
+
+        String contentSecurityPolicy = "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:";
 
         interface ClientAuthorization {
 
@@ -163,6 +162,7 @@ public interface ConfigDefaults {
         String license = null;
         String licenseUrl = null;
         String defaultIncludePattern = "/api/.*";
+        String managementIncludePattern = "/management/.*";
         String host = null;
         String[] protocols = {};
         boolean useDefaultResponseMessages = true;

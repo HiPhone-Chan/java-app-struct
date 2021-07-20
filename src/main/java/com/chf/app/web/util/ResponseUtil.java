@@ -4,15 +4,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.chf.app.utils.FileUtil;
 
@@ -25,6 +28,11 @@ public interface ResponseUtil {
     public static <X> ResponseEntity<X> wrapOrNotFound(Optional<X> maybeResponse, HttpHeaders header) {
         return maybeResponse.map(response -> ResponseEntity.ok().headers(header).body(response))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+    
+    public static <X> ResponseEntity<List<X>> wrapPage(Page<X> page) {
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
     public static void outputMedia(String fileName, HttpServletResponse response) {

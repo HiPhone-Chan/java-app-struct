@@ -1,6 +1,9 @@
 package com.chf.app.web.rest;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.chf.app.constants.ErrorCodeContants;
+import com.chf.app.domain.User;
 import com.chf.app.exception.ServiceException;
+import com.chf.app.repository.UserRepository;
+import com.chf.app.security.SecurityUtils;
 import com.chf.app.service.UserService;
+import com.chf.app.service.dto.AdminUserDTO;
 import com.chf.app.service.dto.PasswordChangeDTO;
-import com.chf.app.service.dto.UserDTO;
 import com.chf.app.web.vm.ManagedUserVM;
 
 @RestController
@@ -23,10 +29,13 @@ public class AccountResource {
 
     private final Logger log = LoggerFactory.getLogger(AccountResource.class);
 
+    private final UserRepository userRepository;
+
     private final UserService userService;
 
-    public AccountResource(UserService userService) {
+    public AccountResource(UserRepository userRepository, UserService userService) {
         super();
+        this.userRepository = userRepository;
         this.userService = userService;
     }
 
@@ -37,9 +46,21 @@ public class AccountResource {
     }
 
     @GetMapping("/account")
-    public UserDTO getCurrentAccount() {
-        return userService.getUserWithAuthorities().map(UserDTO::new)
+    public AdminUserDTO getAccount() {
+        return userService.getUserWithAuthorities().map(AdminUserDTO::new)
                 .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA, "User could not be found"));
+    }
+
+    @PostMapping("/account")
+    public void saveAccount(@Valid @RequestBody AdminUserDTO userDTO) {
+        String userLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(
+                () -> new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Current user login not found"));
+        Optional<User> user = userRepository.findOneByLogin(userLogin);
+        if (!user.isPresent()) {
+            throw new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Current user login not found");
+        }
+        userService.updateUser(userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail(), userDTO.getLangKey(),
+                userDTO.getImageUrl());
     }
 
     @PostMapping("/account/change-password")

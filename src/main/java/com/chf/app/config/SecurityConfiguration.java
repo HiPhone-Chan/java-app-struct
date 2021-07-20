@@ -1,20 +1,14 @@
 package com.chf.app.config;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -22,6 +16,7 @@ import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWrite
 import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 
+import com.chf.app.config.properties.ConfigProperties;
 import com.chf.app.constants.AuthoritiesConstants;
 import com.chf.app.security.jwt.JWTConfigurer;
 import com.chf.app.security.jwt.TokenProvider;
@@ -31,9 +26,7 @@ import com.chf.app.security.jwt.TokenProvider;
 @Import(SecurityProblemSupport.class)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
-
-    private final UserDetailsService userDetailsService;
+    private final ConfigProperties configProperties;
 
     private final TokenProvider tokenProvider;
 
@@ -41,29 +34,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final SecurityProblemSupport problemSupport;
 
-    public SecurityConfiguration(AuthenticationManagerBuilder authenticationManagerBuilder,
-            UserDetailsService userDetailsService, TokenProvider tokenProvider, CorsFilter corsFilter,
+    public SecurityConfiguration(ConfigProperties configProperties, TokenProvider tokenProvider, CorsFilter corsFilter,
             SecurityProblemSupport problemSupport) {
-        this.authenticationManagerBuilder = authenticationManagerBuilder;
-        this.userDetailsService = userDetailsService;
+        super();
+        this.configProperties = configProperties;
         this.tokenProvider = tokenProvider;
         this.corsFilter = corsFilter;
         this.problemSupport = problemSupport;
-    }
-
-    @PostConstruct
-    public void init() {
-        try {
-            authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-        } catch (Exception e) {
-            throw new BeanInitializationException("Security configuration failed", e);
-        }
-    }
-
-    @Override
-    @Bean
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
     }
 
     @Bean
@@ -84,8 +61,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .exceptionHandling().authenticationEntryPoint(problemSupport).accessDeniedHandler(problemSupport)
                 .and()
                 .headers()
-                .contentSecurityPolicy(
-                        "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:")
+                .contentSecurityPolicy(configProperties.getSecurity().getContentSecurityPolicy())
                 .and()
                 .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
                 .and()

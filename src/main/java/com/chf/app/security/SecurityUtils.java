@@ -1,7 +1,10 @@
 package com.chf.app.security;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -54,13 +57,12 @@ public final class SecurityUtils {
     public static boolean isAuthenticated() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         return Optional.ofNullable(securityContext.getAuthentication())
-                .map(authentication -> authentication.getAuthorities().stream().noneMatch(
-                        grantedAuthority -> grantedAuthority.getAuthority().equals(AuthoritiesConstants.ANONYMOUS)))
+                .map(authentication -> getAuthorities(authentication).noneMatch(AuthoritiesConstants.ANONYMOUS::equals))
                 .orElse(false);
     }
 
     public static boolean isAdmin() {
-        return isCurrentUserInRole(AuthoritiesConstants.ADMIN);
+        return hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
     }
 
     /**
@@ -74,11 +76,15 @@ public final class SecurityUtils {
      * @param authority the authority to check
      * @return true if the current user has the authority, false otherwise
      */
-    public static boolean isCurrentUserInRole(String authority) {
+    public static boolean hasCurrentUserThisAuthority(String authority) {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         return Optional
-                .ofNullable(securityContext.getAuthentication()).map(authentication -> authentication.getAuthorities()
-                        .stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(authority)))
+                .ofNullable(securityContext.getAuthentication())
+                .map(authentication -> getAuthorities(authentication).anyMatch(authority::equals))
                 .orElse(false);
+    }
+
+    private static Stream<String> getAuthorities(Authentication authentication) {
+        return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority);
     }
 }
