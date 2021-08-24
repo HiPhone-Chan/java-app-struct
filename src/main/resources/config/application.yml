@@ -1,3 +1,6 @@
+camunda.bpm.metrics:
+  enabled: false
+  db-reporter-activate: false
 management:
   endpoints:
     web:

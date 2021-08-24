@@ -1,5 +1,6 @@
 package com.chf.app.config;
 
+import org.camunda.bpm.engine.IdentityService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
@@ -18,6 +19,7 @@ import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 
 import com.chf.app.config.properties.ConfigProperties;
 import com.chf.app.constants.AuthoritiesConstants;
+import com.chf.app.security.bpm.BpmConfigurer;
 import com.chf.app.security.jwt.JWTConfigurer;
 import com.chf.app.security.jwt.TokenProvider;
 
@@ -34,13 +36,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final SecurityProblemSupport problemSupport;
 
+    private final IdentityService identityService;
+
     public SecurityConfiguration(ConfigProperties configProperties, TokenProvider tokenProvider, CorsFilter corsFilter,
-            SecurityProblemSupport problemSupport) {
+            SecurityProblemSupport problemSupport, IdentityService identityService) {
         super();
         this.configProperties = configProperties;
         this.tokenProvider = tokenProvider;
         this.corsFilter = corsFilter;
         this.problemSupport = problemSupport;
+        this.identityService = identityService;
     }
 
     @Bean
@@ -70,12 +75,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .frameOptions().deny().and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
-                .antMatchers("/resource/**").permitAll().antMatchers("/openapi/**").permitAll()
-                .antMatchers("/api/authenticate").permitAll().antMatchers("/api/**").authenticated()
+                .antMatchers("/resource/**").permitAll()
+                .antMatchers("/test/**").permitAll()
+                .antMatchers("/api/authenticate").permitAll()
+                .antMatchers("/api/**").authenticated()
+                .antMatchers("/engine-rest/**").authenticated()
                 .antMatchers("/management/health").permitAll().antMatchers("/management/info").permitAll()
                 .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN).and()
                 .httpBasic().and()
-                .apply(new JWTConfigurer(tokenProvider));
+                .apply(new JWTConfigurer(tokenProvider)).and()
+                .apply(new BpmConfigurer(identityService))
+                ;
         // @formatter:on
     }
 

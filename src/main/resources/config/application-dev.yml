@@ -1,7 +1,12 @@
+camunda.bpm:
+  admin-user:
+    id: admin
+    password: admin
 logging:
   level:
     ROOT: DEBUG
-    "[org.hibernate.SQL]": DEBUG
+    "[org.hibernate.SQL]": INFO
+    "[org.camunda.bpm]": INFO
     "[com.chf.app]": DEBUG    
     
 spring:
