@@ -15,7 +15,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,18 +27,21 @@ import com.chf.app.repository.OperationLogRepository;
 
 // 操作日志
 
-@Component
 @Aspect
 public class OperateLoggingAspect {
 
     @Autowired
     private OperationLogRepository operationLogRepository;
 
+    @Pointcut("within(@org.springframework.web.bind.annotation.RestController *)")
+    public void springBeanPointcut() {
+    }
+
     @Pointcut("execution(* " + BASE_PACKAGE + ".web.rest..*(..))")
     public void loggingPointcut() {
     }
 
-    @After("loggingPointcut()")
+    @After("springBeanPointcut()() && loggingPointcut()")
     @Transactional
     public void logAfter(JoinPoint joinPoint) throws Throwable {
         try {

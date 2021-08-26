@@ -30,23 +30,16 @@ import springfox.documentation.spring.web.plugins.Docket;
 @Configuration
 @Profile(SystemConstants.PROFILE_DEVELOPMENT)
 public class OpenApiConfiguration {
-    private final ConfigProperties configProperties;
-
-    public OpenApiConfiguration(ConfigProperties configProperties) {
-        this.configProperties = configProperties;
-    }
 
     @Bean
-    public Docket createRestApi() {
-        return new Docket(DocumentationType.OAS_30).apiInfo(apiInfo()).select()
+    public Docket apiFirstDocket(ConfigProperties configProperties) {
+        ApiDocs swagger = configProperties.getApiDocs();
+        ApiInfo apiInfo = new ApiInfoBuilder().title(swagger.getTitle()).description(swagger.getDescription())
+                .version(swagger.getVersion()).build();
+
+        return new Docket(DocumentationType.OAS_30).apiInfo(apiInfo).select()
                 .apis(RequestHandlerSelectors.basePackage(SystemConstants.BASE_PACKAGE)).paths(PathSelectors.any())
                 .build().securitySchemes(auth()).securityContexts(securityContexts());
-    }
-
-    private ApiInfo apiInfo() {
-        ApiDocs swagger = configProperties.getApiDocs();
-        return new ApiInfoBuilder().title(swagger.getTitle()).description(swagger.getDescription())
-                .version(swagger.getVersion()).build();
     }
 
     private List<SecurityScheme> auth() {
