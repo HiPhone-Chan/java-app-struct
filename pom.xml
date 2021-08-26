@@ -8,21 +8,23 @@
 	<packaging>jar</packaging>
 
 	<properties>
+		<java.version>11</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>1.8</java.version>
 		<camunda.spring.boot.starter.version>7.15.0</camunda.spring.boot.starter.version>
-		<spring-boot.version>2.4.4</spring-boot.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
+        <start-class>com.chf.app.Application</start-class>
+		<spring-boot.version>2.4.7</spring-boot.version>
 		<jjwt.version>0.11.2</jjwt.version>
 		<swagger.version>3.0.0</swagger.version>
 		<!-- Plugin versions -->
+		<maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
+		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
 		<maven-war-plugin.version>3.2.2</maven-war-plugin.version>
+		<maven-enforcer-plugin.version>3.0.0-M3</maven-enforcer-plugin.version>
 		<maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
 		<exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
-		<maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
 		<lifecycle-mapping.version>1.0.0</lifecycle-mapping.version>
 	</properties>
 
@@ -167,11 +169,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.fasterxml.jackson.module</groupId>
-			<artifactId>jackson-module-afterburner</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 		</dependency>
@@ -191,28 +188,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-				</configuration>
 			</plugin>
 
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>repackage</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<!-- <mainClass>${start-class}</mainClass> -->
-					<executable>true</executable>
-					<fork>true</fork>
-				</configuration>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
 			</plugin>
 
 			<plugin>
@@ -221,41 +201,8 @@
 			</plugin>
 
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>${exec-maven-plugin.version}</version>
-				<executions>
-					<execution>
-						<id>exec-npm-install</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>npm</executable>
-							<arguments>
-								<argument>install</argument>
-							</arguments>
-							<workingDirectory>${basedir}/src/main/webapp/admin</workingDirectory>
-						</configuration>
-					</execution>
-
-					<execution>
-						<id>exec-npm-run-build</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>npm</executable>
-							<arguments>
-								<argument>run</argument>
-								<argument>build:prod</argument>
-							</arguments>
-							<workingDirectory>${basedir}/src/main/webapp/admin</workingDirectory>
-						</configuration>
-					</execution>
-				</executions>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 
 		</plugins>
@@ -263,16 +210,89 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${maven-compiler-plugin.version}</version>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>org.springframework.boot</groupId>
+								<artifactId>spring-boot-configuration-processor</artifactId>
+								<version>${spring-boot.version}</version>
+							</path>
+						</annotationProcessorPaths>
+					</configuration>
+				</plugin>
+
+				<!-- war 打包 -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>${maven-war-plugin.version}</version>
+					<executions>
+						<execution>
+							<id>default-war</id>
+							<goals>
+								<goal>war</goal>
+							</goals>
+							<phase>package</phase>
+						</execution>
+					</executions>
+					<configuration>
+						<warSourceIncludes>WEB-INF/**,META-INF/**</warSourceIncludes>
+						<failOnMissingWebXml>false</failOnMissingWebXml>
+					</configuration>
+				</plugin>
+
+				<plugin>
 					<artifactId>maven-clean-plugin</artifactId>
 					<version>${maven-clean-plugin.version}</version>
 				</plugin>
 
+				<!-- 检查环境 -->
 				<plugin>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-maven-plugin</artifactId>
-					<version>${spring-boot.version}</version>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>${maven-enforcer-plugin.version}</version>
+					<executions>
+						<execution>
+							<id>enforce-versions</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>enforce-dependencyConvergence</id>
+							<configuration>
+								<rules>
+									<DependencyConvergence />
+								</rules>
+								<fail>false</fail>
+							</configuration>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<rules>
+							<requireMavenVersion>
+								<message>You are running an older version of Maven. Requires at
+									least Maven ${maven.version}</message>
+								<version>[${maven.version},)</version>
+							</requireMavenVersion>
+							<requireJavaVersion>
+								<message>You are running an incompatible version of Java.
+									Supports JDK 8 to 16.</message>
+								<version>[1.8,17)</version>
+							</requireJavaVersion>
+						</rules>
+					</configuration>
 				</plugin>
 
+				<!-- 资源文件 -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
@@ -312,30 +332,21 @@
 				</plugin>
 
 				<plugin>
-					<!-- This plugin's configuration is used to store Eclipse m2e settings 
-						only. It has no influence on the Maven build itself. Remove when the m2e 
-						plugin can correctly bind to Maven lifecycle -->
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>${lifecycle-mapping.version}</version>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>${spring-boot.version}</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>repackage</goal>
+							</goals>
+						</execution>
+					</executions>
 					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.codehaus.mojo</groupId>
-										<artifactId>exec-maven-plugin</artifactId>
-										<versionRange>${exec-maven-plugin.version}</versionRange>
-										<goals>
-											<goal>exec</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore />
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
+						<mainClass>${start-class}</mainClass>
+						<fork>true</fork>
+						<!-- Enable the line below to have remote debugging of your application 
+							on port 5005 <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</jvmArguments> -->
 					</configuration>
 				</plugin>
 			</plugins>
@@ -343,6 +354,12 @@
 	</build>
 
 	<profiles>
+		<profile>
+			<id>api-docs</id>
+			<properties>
+				<profile.api-docs>,api-docs</profile.api-docs>
+			</properties>
+		</profile>
 		<profile>
 			<id>dev</id>
 			<activation>
@@ -392,36 +409,11 @@
 					<plugin>
 						<groupId>org.springframework.boot</groupId>
 						<artifactId>spring-boot-maven-plugin</artifactId>
-						<configuration>
-							<!-- <mainClass>${start-class}</mainClass> -->
-							<executable>true</executable>
-						</configuration>
 						<executions>
 							<execution>
 								<goals>
 									<goal>build-info</goal>
 								</goals>
-							</execution>
-						</executions>
-					</plugin>
-
-					<plugin>
-						<artifactId>maven-resources-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>copy-resources</id>
-								<phase>process-sources</phase>
-								<goals>
-									<goal>copy-resources</goal>
-								</goals>
-								<configuration>
-									<outputDirectory>${basedir}/target/classes/static/admin</outputDirectory>
-									<resources>
-										<resource>
-											<directory>${basedir}/src/main/webapp/admin/dist</directory>
-										</resource>
-									</resources>
-								</configuration>
 							</execution>
 						</executions>
 					</plugin>
@@ -442,32 +434,10 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-war-plugin</artifactId>
-						<version>${maven-war-plugin.version}</version>
-						<executions>
-							<execution>
-								<goals>
-									<goal>war</goal>
-								</goals>
-								<phase>package</phase>
-							</execution>
-						</executions>
-						<configuration>
-							<warSourceDirectory>src/main/webapp/</warSourceDirectory>
-							<warSourceExcludes>admin/**,**/.gitignore</warSourceExcludes>
-							<!-- <warSourceIncludes>WEB-INF/**,META-INF/**</warSourceIncludes> -->
-							<failOnMissingWebXml>false</failOnMissingWebXml>
-							<webResources>
-								<resource>
-									<directory>src/main/webapp/admin/dist</directory>
-									<targetPath>admin</targetPath>
-								</resource>
-							</webResources>
-						</configuration>
 					</plugin>
 				</plugins>
 			</build>
 			<properties>
-				<spring.profiles.active>prod</spring.profiles.active>
 			</properties>
 		</profile>
 	</profiles>

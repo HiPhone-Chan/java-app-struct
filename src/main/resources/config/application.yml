@@ -16,9 +16,6 @@ management:
         enabled: true
 
 spring:
-  main:
-    banner-mode: 'off'
-    allow-bean-definition-overriding: true
   application:
     name: app
   profiles:
@@ -59,6 +56,9 @@ spring:
         implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
   messages:
     basename: i18n/messages
+  main:
+    banner-mode: 'off'
+    allow-bean-definition-overriding: true
   servlet:
     multipart:
       enabled: true
@@ -73,6 +73,11 @@ spring:
       thread-name-prefix: app-scheduling-
       pool:
         size: 2
+  thymeleaf:
+    mode: HTML
+  output:
+    ansi:
+      enabled: always
 
 server:
   servlet:
@@ -83,15 +88,6 @@ server:
 app:
   clientApp:
     name: 'app'
-  security:
-    authentication:
-      jwt:
-      # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
-        base64-secret: glxxC0Yc0Pqp2qq+NAhVKEgC/mUwIi0xptBJyZxXE290YmtGY4LRj0Qdr5tcpfa1t6hbVpYf9AoB+h0NU22KhA==
-        secret: wCyYpboXnOq94s6m1BkCD0D323MTXlUXj8kTbA15
-        token-validity-in-seconds: 86400
-        token-validity-in-seconds-for-remember-me: 2592000
-    content-security-policy: "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
   api-docs:
     default-include-pattern: ${server.servlet.context-path:}/api/.*
     management-include-pattern: ${server.servlet.context-path:}/management/.*
@@ -104,3 +100,6 @@ app:
     contact-email:
     license: unlicensed
     license-url:
+  security:
+    content-security-policy: "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
+ 

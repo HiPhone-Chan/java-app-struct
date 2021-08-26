@@ -1,34 +1,31 @@
 java-app-struct
 ===============
-	java起手工程
+	java起手工程(带工作流)
 
 # Develop
-## server side
+To start your application in the dev profile, run:
 ```
-mvn spring-boot:run
-```
-
-## client side
-```
-cd src/main/webapp/admin/
-npm run dev
+mvn
 ```
 
-## Building for production
 
-### Packaging as jar
+# Building for production
+
+## Packaging as jar
 
 To build the final jar and optimize the jwt application for production, run:
 ```
 mvn -Pprod clean verify
 ```    
-### Packaging as war
+
+## Packaging as war
 
 To package your application as a war in order to deploy it to an application server, run:
 ```
-mvn -Pwar clean verify
+mvn -Pprod,war clean verify
 ```
 
 # References
 - [jhipster](https://www.jhipster.tech/)
-- [vue-element-admin](https://panjiachen.github.io/vue-element-admin/)
+- [vue-admin](https://github.com/HiPhone-Chan/vue-admin)
+- [camunda](https://docs.camunda.org/manual/)

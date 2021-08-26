@@ -192,6 +192,6 @@ public class ExceptionTranslator implements ProblemHandling {
     private boolean containsPackageName(String message) {
         // This list is for sure not complete
         return StringUtils.containsAny(message, "org.", "java.", "net.", "javax.", "com.", "io.", "de.",
-                SystemConstants.BASE_PACKAGE_NAME);
+                SystemConstants.BASE_PACKAGE);
     }
 }
