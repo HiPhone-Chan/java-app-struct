@@ -39,7 +39,7 @@ public class OpenApiConfiguration {
     @Bean
     public Docket createRestApi() {
         return new Docket(DocumentationType.OAS_30).apiInfo(apiInfo()).select()
-                .apis(RequestHandlerSelectors.basePackage(SystemConstants.BASE_PACKAGE_NAME)).paths(PathSelectors.any())
+                .apis(RequestHandlerSelectors.basePackage(SystemConstants.BASE_PACKAGE)).paths(PathSelectors.any())
                 .build().securitySchemes(auth()).securityContexts(securityContexts());
     }
 

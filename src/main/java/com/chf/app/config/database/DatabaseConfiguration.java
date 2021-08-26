@@ -10,9 +10,9 @@ import com.chf.app.constants.SystemConstants;
 import com.chf.app.repository.support.JpaExtRepositoryFactoryBean;
 
 @Configuration
-@EnableJpaRepositories(basePackages = SystemConstants.BASE_PACKAGE_NAME
+@EnableJpaRepositories(basePackages = SystemConstants.BASE_PACKAGE
         + ".repository", repositoryFactoryBeanClass = JpaExtRepositoryFactoryBean.class)
-@EntityScan({ SystemConstants.BASE_PACKAGE_NAME, "org.springframework.data.jpa.convert.threeten" })
+@EntityScan({ SystemConstants.BASE_PACKAGE, "org.springframework.data.jpa.convert.threeten" })
 @EnableJpaAuditing(auditorAwareRef = "springSecurityAuditorAware")
 @EnableTransactionManagement
 public class DatabaseConfiguration {

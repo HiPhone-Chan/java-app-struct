@@ -1,5 +1,8 @@
 package com.chf.app.aop.logging;
 
+import static com.chf.app.constants.SystemConstants.BASE_PACKAGE;
+import static com.chf.app.constants.SystemConstants.PROFILE_DEVELOPMENT;
+
 import java.util.Arrays;
 
 import org.aspectj.lang.JoinPoint;
@@ -13,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 
-import com.chf.app.constants.SystemConstants;
 import com.chf.app.exception.ServiceException;
 
 @Aspect
@@ -39,7 +41,8 @@ public class LoggingAspect {
     /**
      * Pointcut that matches all Spring beans in the application's main packages.
      */
-    @Pointcut("within(com.chf.app.repository..*) || within(com.chf.app.service..*) || within(com.chf.app.web..*)")
+    @Pointcut("within(" + BASE_PACKAGE + ".repository..*) || within(" + BASE_PACKAGE + ".service..*) || within("
+            + BASE_PACKAGE + ".web..*)")
     public void loggingPointcut() {
     }
 
@@ -51,7 +54,7 @@ public class LoggingAspect {
      */
     @AfterThrowing(pointcut = "springBeanPointcut() && loggingPointcut()", throwing = "e")
     public void logAfterThrowing(JoinPoint joinPoint, Throwable e) {
-        if (env.acceptsProfiles(Profiles.of(SystemConstants.PROFILE_DEVELOPMENT))) {
+        if (env.acceptsProfiles(Profiles.of(PROFILE_DEVELOPMENT))) {
             log.error("Exception in {}.{}() with cause = \'{}\' and exception = \'{}\'",
                     joinPoint.getSignature().getDeclaringTypeName(), joinPoint.getSignature().getName(),
                     e.getCause() != null ? e.getCause() : "NULL", e.getMessage(), e);
