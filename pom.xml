@@ -185,6 +185,10 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+			</plugin>
 		</plugins>
 
 		<pluginManagement>
@@ -221,8 +225,15 @@
 						</execution>
 					</executions>
 					<configuration>
-						<warSourceIncludes>WEB-INF/**,META-INF/**</warSourceIncludes>
+						<warSourceIncludes>src/main/webapp/</warSourceIncludes>
+						<warSourceExcludes>admin/**,**/.gitignore</warSourceExcludes>
 						<failOnMissingWebXml>false</failOnMissingWebXml>
+						<webResources>
+							<resource>
+								<directory>src/main/webapp/admin/dist</directory>
+								<targetPath>admin</targetPath>
+							</resource>
+						</webResources>
 					</configuration>
 				</plugin>
 
@@ -308,6 +319,21 @@
 								</resources>
 							</configuration>
 						</execution>
+						<execution>
+							<id>copy-resources</id>
+							<phase>process-sources</phase>
+							<goals>
+								<goal>copy-resources</goal>
+							</goals>
+							<configuration>
+								<outputDirectory>${basedir}/target/classes/static/admin</outputDirectory>
+								<resources>
+									<resource>
+										<directory>${basedir}/src/main/webapp/admin/dist</directory>
+									</resource>
+								</resources>
+							</configuration>
+						</execution>
 					</executions>
 				</plugin>
 
@@ -328,6 +354,44 @@
 						<!-- Enable the line below to have remote debugging of your application 
 							on port 5005 <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</jvmArguments> -->
 					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>${exec-maven-plugin.version}</version>
+					<executions>
+						<execution>
+							<id>exec-npm-install</id>
+							<phase>initialize</phase>
+							<goals>
+								<goal>exec</goal>
+							</goals>
+							<configuration>
+								<executable>npm</executable>
+								<arguments>
+									<argument>install</argument>
+								</arguments>
+								<workingDirectory>${basedir}/src/main/webapp/admin</workingDirectory>
+							</configuration>
+						</execution>
+
+						<execution>
+							<id>exec-npm-run-build</id>
+							<phase>generate-sources</phase>
+							<goals>
+								<goal>exec</goal>
+							</goals>
+							<configuration>
+								<executable>npm</executable>
+								<arguments>
+									<argument>run</argument>
+									<argument>build:prod</argument>
+								</arguments>
+								<workingDirectory>${basedir}/src/main/webapp/admin</workingDirectory>
+							</configuration>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
