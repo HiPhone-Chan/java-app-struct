@@ -1,9 +1,8 @@
 package com.chf.app.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.chf.app.domain.Navigation;
+import com.chf.app.repository.support.JpaExtRepository;
 
-public interface NavigationRepository extends JpaRepository<Navigation, String> {
+public interface NavigationRepository extends JpaExtRepository<Navigation, String> {
 
 }

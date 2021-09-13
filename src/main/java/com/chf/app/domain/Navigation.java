@@ -3,11 +3,13 @@ package com.chf.app.domain;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 // 菜单，导航
 @Entity
-@Table(name = "navigation")
+@Table(name = "navigation", indexes = { @Index(columnList = "path"), @Index(columnList = "region") })
 public class Navigation {
 
     @Id
@@ -21,6 +23,12 @@ public class Navigation {
 
     @Column(name = "icon", length = 511)
     private String icon;
+    // 使用区域
+    @Column(name = "region", length = 31)
+    private String region;
+
+    @ManyToOne
+    private Navigation parent;
 
     public String getId() {
         return id;
@@ -52,6 +60,22 @@ public class Navigation {
 
     public void setIcon(String icon) {
         this.icon = icon;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    public Navigation getParent() {
+        return parent;
+    }
+
+    public void setParent(Navigation parent) {
+        this.parent = parent;
     }
 
     @Override

@@ -3,13 +3,12 @@ package com.chf.app.domain;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-// 组织
+// 角色
 @Entity
-@Table(name = "organization")
-public class Organization {
+@Table(name = "staff_role")
+public class StaffRole {
 
     @Id
     private String id;
@@ -17,8 +16,8 @@ public class Organization {
     @Column(name = "name", length = 31)
     private String name;
 
-    @ManyToOne
-    private Organization parent;
+    @Column(name = "remark", length = 511)
+    private String remark;
 
     public String getId() {
         return id;
@@ -36,12 +35,12 @@ public class Organization {
         this.name = name;
     }
 
-    public Organization getParent() {
-        return parent;
+    public String getRemark() {
+        return remark;
     }
 
-    public void setParent(Organization parent) {
-        this.parent = parent;
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 
     @Override
@@ -60,7 +59,7 @@ public class Organization {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        Organization other = (Organization) obj;
+        StaffRole other = (StaffRole) obj;
         if (id == null) {
             if (other.id != null)
                 return false;

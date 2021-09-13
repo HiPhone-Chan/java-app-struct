@@ -5,26 +5,26 @@ import java.io.Serializable;
 import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;
 
-import com.chf.app.domain.Organization;
+import com.chf.app.domain.StaffRole;
 import com.chf.app.domain.User;
 
 @Embeddable
-public class OrganizationUserId implements Serializable {
+public class UserRoleId implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @ManyToOne
-    private Organization Organization;
-
-    @ManyToOne
     private User user;
 
-    public Organization getOrganization() {
-        return Organization;
+    @ManyToOne
+    private StaffRole role;
+
+    public UserRoleId() {
     }
 
-    public void setOrganization(Organization organization) {
-        Organization = organization;
+    public UserRoleId(User user, StaffRole role) {
+        this.user = user;
+        this.role = role;
     }
 
     public User getUser() {
@@ -35,11 +35,19 @@ public class OrganizationUserId implements Serializable {
         this.user = user;
     }
 
+    public StaffRole getRole() {
+        return role;
+    }
+
+    public void setRole(StaffRole role) {
+        this.role = role;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((Organization == null) ? 0 : Organization.hashCode());
+        result = prime * result + ((role == null) ? 0 : role.hashCode());
         result = prime * result + ((user == null) ? 0 : user.hashCode());
         return result;
     }
@@ -52,11 +60,11 @@ public class OrganizationUserId implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        OrganizationUserId other = (OrganizationUserId) obj;
-        if (Organization == null) {
-            if (other.Organization != null)
+        UserRoleId other = (UserRoleId) obj;
+        if (role == null) {
+            if (other.role != null)
                 return false;
-        } else if (!Organization.equals(other.Organization))
+        } else if (!role.equals(other.role))
             return false;
         if (user == null) {
             if (other.user != null)

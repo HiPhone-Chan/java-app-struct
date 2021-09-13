@@ -1,16 +1,31 @@
 package com.chf.app.domain.id;
 
+import java.io.Serializable;
+
 import javax.persistence.Embeddable;
+import javax.persistence.ManyToOne;
 
 import com.chf.app.domain.Navigation;
-import com.chf.app.domain.User;
+import com.chf.app.domain.StaffRole;
 
 @Embeddable
-public class NavigationUserId {
+public class NavigationRoleId implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
+    @ManyToOne
     private Navigation navigation;
 
-    private User user;
+    @ManyToOne
+    private StaffRole role;
+
+    public NavigationRoleId() {
+    }
+
+    public NavigationRoleId(Navigation navigation, StaffRole role) {
+        this.navigation = navigation;
+        this.role = role;
+    }
 
     public Navigation getNavigation() {
         return navigation;
@@ -20,12 +35,12 @@ public class NavigationUserId {
         this.navigation = navigation;
     }
 
-    public User getUser() {
-        return user;
+    public StaffRole getRole() {
+        return role;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setRole(StaffRole role) {
+        this.role = role;
     }
 
     @Override
@@ -33,7 +48,7 @@ public class NavigationUserId {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((navigation == null) ? 0 : navigation.hashCode());
-        result = prime * result + ((user == null) ? 0 : user.hashCode());
+        result = prime * result + ((role == null) ? 0 : role.hashCode());
         return result;
     }
 
@@ -45,16 +60,16 @@ public class NavigationUserId {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        NavigationUserId other = (NavigationUserId) obj;
+        NavigationRoleId other = (NavigationRoleId) obj;
         if (navigation == null) {
             if (other.navigation != null)
                 return false;
         } else if (!navigation.equals(other.navigation))
             return false;
-        if (user == null) {
-            if (other.user != null)
+        if (role == null) {
+            if (other.role != null)
                 return false;
-        } else if (!user.equals(other.user))
+        } else if (!role.equals(other.role))
             return false;
         return true;
     }
