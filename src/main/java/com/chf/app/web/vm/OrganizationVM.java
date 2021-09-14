@@ -1,5 +1,7 @@
 package com.chf.app.web.vm;
 
+import java.util.Optional;
+
 import com.chf.app.domain.Organization;
 
 public class OrganizationVM {
@@ -16,7 +18,7 @@ public class OrganizationVM {
     public OrganizationVM(Organization organization) {
         this.id = organization.getId();
         this.name = organization.getName();
-        this.parentId = organization.getParent().getId();
+        this.parentId = Optional.ofNullable(organization.getParent()).map(Organization::getId).orElse(null);
     }
 
     public String getId() {

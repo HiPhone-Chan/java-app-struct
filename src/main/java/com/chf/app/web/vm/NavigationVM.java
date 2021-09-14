@@ -1,5 +1,7 @@
 package com.chf.app.web.vm;
 
+import java.util.Optional;
+
 import com.chf.app.domain.Navigation;
 
 public class NavigationVM {
@@ -25,7 +27,7 @@ public class NavigationVM {
         this.path = navigation.getPath();
         this.icon = navigation.getIcon();
         this.region = navigation.getRegion();
-        this.parentId = navigation.getParent().getId();
+        this.parentId = Optional.ofNullable(navigation.getParent()).map(Navigation::getId).orElse(null);
     }
 
     public String getId() {

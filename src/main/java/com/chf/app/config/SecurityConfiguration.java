@@ -70,6 +70,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .frameOptions().deny().and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
+//                .accessDecisionManager(null)
                 .antMatchers("/resource/**").permitAll()
                 .antMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
                 .antMatchers("/api/authenticate").permitAll()
