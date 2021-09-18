@@ -5,35 +5,27 @@ import java.io.Serializable;
 import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;
 
+import com.chf.app.domain.ApiInfo;
 import com.chf.app.domain.StaffRole;
-import com.chf.app.domain.User;
 
-// 用户角色关系
 @Embeddable
-public class UserRoleId implements Serializable {
+public class RoleApiId implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @ManyToOne
-    private User user;
-
-    @ManyToOne
     private StaffRole role;
 
-    public UserRoleId() {
+    @ManyToOne
+    private ApiInfo apiInfo;
+
+    public RoleApiId() {
     }
 
-    public UserRoleId(User user, StaffRole role) {
-        this.user = user;
+    public RoleApiId(StaffRole role, ApiInfo apiInfo) {
+        super();
         this.role = role;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
+        this.apiInfo = apiInfo;
     }
 
     public StaffRole getRole() {
@@ -44,12 +36,20 @@ public class UserRoleId implements Serializable {
         this.role = role;
     }
 
+    public ApiInfo getApiInfo() {
+        return apiInfo;
+    }
+
+    public void setApiInfo(ApiInfo apiInfo) {
+        this.apiInfo = apiInfo;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((apiInfo == null) ? 0 : apiInfo.hashCode());
         result = prime * result + ((role == null) ? 0 : role.hashCode());
-        result = prime * result + ((user == null) ? 0 : user.hashCode());
         return result;
     }
 
@@ -61,16 +61,16 @@ public class UserRoleId implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        UserRoleId other = (UserRoleId) obj;
+        RoleApiId other = (RoleApiId) obj;
+        if (apiInfo == null) {
+            if (other.apiInfo != null)
+                return false;
+        } else if (!apiInfo.equals(other.apiInfo))
+            return false;
         if (role == null) {
             if (other.role != null)
                 return false;
         } else if (!role.equals(other.role))
-            return false;
-        if (user == null) {
-            if (other.user != null)
-                return false;
-        } else if (!user.equals(other.user))
             return false;
         return true;
     }

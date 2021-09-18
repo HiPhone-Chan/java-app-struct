@@ -18,6 +18,10 @@ public class NavigationVM {
 
     private String parentId;
 
+    private boolean hasChildren;
+
+    private boolean hasApis;
+
     public NavigationVM() {
     }
 
@@ -76,6 +80,22 @@ public class NavigationVM {
 
     public void setParentId(String parentId) {
         this.parentId = parentId;
+    }
+
+    public boolean isHasChildren() {
+        return hasChildren;
+    }
+
+    public void setHasChildren(boolean hasChildren) {
+        this.hasChildren = hasChildren;
+    }
+
+    public boolean isHasApis() {
+        return hasApis;
+    }
+
+    public void setHasApis(boolean hasApis) {
+        this.hasApis = hasApis;
     }
 
 }

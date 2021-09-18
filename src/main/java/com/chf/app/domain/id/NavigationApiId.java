@@ -5,12 +5,11 @@ import java.io.Serializable;
 import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;
 
+import com.chf.app.domain.ApiInfo;
 import com.chf.app.domain.Navigation;
-import com.chf.app.domain.StaffRole;
 
-// 导航角色关系
 @Embeddable
-public class NavigationRoleId implements Serializable {
+public class NavigationApiId implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -18,14 +17,23 @@ public class NavigationRoleId implements Serializable {
     private Navigation navigation;
 
     @ManyToOne
-    private StaffRole role;
+    private ApiInfo apiInfo;
 
-    public NavigationRoleId() {
+    public NavigationApiId() {
     }
 
-    public NavigationRoleId(Navigation navigation, StaffRole role) {
+    public NavigationApiId(Navigation navigation, ApiInfo apiInfo) {
+        super();
         this.navigation = navigation;
-        this.role = role;
+        this.apiInfo = apiInfo;
+    }
+
+    public ApiInfo getApiInfo() {
+        return apiInfo;
+    }
+
+    public void setApiInfo(ApiInfo apiInfo) {
+        this.apiInfo = apiInfo;
     }
 
     public Navigation getNavigation() {
@@ -36,20 +44,12 @@ public class NavigationRoleId implements Serializable {
         this.navigation = navigation;
     }
 
-    public StaffRole getRole() {
-        return role;
-    }
-
-    public void setRole(StaffRole role) {
-        this.role = role;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((apiInfo == null) ? 0 : apiInfo.hashCode());
         result = prime * result + ((navigation == null) ? 0 : navigation.hashCode());
-        result = prime * result + ((role == null) ? 0 : role.hashCode());
         return result;
     }
 
@@ -61,16 +61,16 @@ public class NavigationRoleId implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        NavigationRoleId other = (NavigationRoleId) obj;
+        NavigationApiId other = (NavigationApiId) obj;
+        if (apiInfo == null) {
+            if (other.apiInfo != null)
+                return false;
+        } else if (!apiInfo.equals(other.apiInfo))
+            return false;
         if (navigation == null) {
             if (other.navigation != null)
                 return false;
         } else if (!navigation.equals(other.navigation))
-            return false;
-        if (role == null) {
-            if (other.role != null)
-                return false;
-        } else if (!role.equals(other.role))
             return false;
         return true;
     }

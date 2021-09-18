@@ -2,15 +2,16 @@ package com.chf.app.domain.id;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;
 
+import com.chf.app.domain.Navigation;
 import com.chf.app.domain.Organization;
-import com.chf.app.domain.User;
 
-// 组织用户关系
+// 组织导航关系
 @Embeddable
-public class OrganizationUserId implements Serializable {
+public class OrganizationNavigationId implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -18,7 +19,11 @@ public class OrganizationUserId implements Serializable {
     private Organization Organization;
 
     @ManyToOne
-    private User user;
+    private Navigation navigation;
+
+    // 页面使用到的api
+    @Column(name = "apis", length = 511)
+    private String apis;
 
     public Organization getOrganization() {
         return Organization;
@@ -28,12 +33,20 @@ public class OrganizationUserId implements Serializable {
         Organization = organization;
     }
 
-    public User getUser() {
-        return user;
+    public Navigation getNavigation() {
+        return navigation;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setNavigation(Navigation navigation) {
+        this.navigation = navigation;
+    }
+
+    public String getApis() {
+        return apis;
+    }
+
+    public void setApis(String apis) {
+        this.apis = apis;
     }
 
     @Override
@@ -41,7 +54,7 @@ public class OrganizationUserId implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((Organization == null) ? 0 : Organization.hashCode());
-        result = prime * result + ((user == null) ? 0 : user.hashCode());
+        result = prime * result + ((navigation == null) ? 0 : navigation.hashCode());
         return result;
     }
 
@@ -53,16 +66,16 @@ public class OrganizationUserId implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        OrganizationUserId other = (OrganizationUserId) obj;
+        OrganizationNavigationId other = (OrganizationNavigationId) obj;
         if (Organization == null) {
             if (other.Organization != null)
                 return false;
         } else if (!Organization.equals(other.Organization))
             return false;
-        if (user == null) {
-            if (other.user != null)
+        if (navigation == null) {
+            if (other.navigation != null)
                 return false;
-        } else if (!user.equals(other.user))
+        } else if (!navigation.equals(other.navigation))
             return false;
         return true;
     }

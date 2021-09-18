@@ -11,7 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +20,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.chf.app.constants.ErrorCodeContants;
 import com.chf.app.domain.Navigation;
+import com.chf.app.exception.ServiceException;
 import com.chf.app.repository.NavigationRepository;
+import com.chf.app.service.NavigationService;
+import com.chf.app.service.dto.NavigationTreeDTO;
 import com.chf.app.utils.RandomUtil;
 import com.chf.app.web.util.ResponseUtil;
 import com.chf.app.web.vm.NavigationVM;
@@ -34,9 +37,8 @@ public class NavigationResource {
     @Autowired
     private NavigationRepository navigationRepository;
 
-    public NavigationResource() {
-//        System.out.println(123);
-    }
+    @Autowired
+    private NavigationService navigationService;
 
     @PostMapping("/navigation")
     public void createNavigation(@RequestBody NavigationVM navigationVM) {
@@ -48,9 +50,9 @@ public class NavigationResource {
         navigation.setRegion(navigationVM.getRegion());
         String parentId = navigationVM.getParentId();
         if (StringUtils.isNotEmpty(parentId)) {
-            navigationRepository.findById(parentId).ifPresent(parent -> {
-                navigation.setParent(parent);
-            });
+            Navigation parent = navigationRepository.findById(parentId)
+                    .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+            navigation.setParent(parent);
         }
         navigationRepository.save(navigation);
     }
@@ -64,9 +66,9 @@ public class NavigationResource {
             navigation.setRegion(navigationVM.getRegion());
             String parentId = navigationVM.getParentId();
             if (StringUtils.isNotEmpty(parentId)) {
-                navigationRepository.findById(parentId).ifPresent(parent -> {
-                    navigation.setParent(parent);
-                });
+                Navigation parent = navigationRepository.findById(parentId)
+                        .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+                navigation.setParent(parent);
             }
             navigationRepository.save(navigation);
         });
@@ -88,8 +90,17 @@ public class NavigationResource {
             query.where(criteriaBuilder.and(andList.toArray(new Predicate[andList.size()])));
             return query.getRestriction();
         };
-        Page<NavigationVM> page = navigationRepository.findAll(spec, pageable).map(NavigationVM::new);
+        Page<NavigationVM> page = navigationRepository.findAll(spec, pageable).map(navigation -> {
+            NavigationVM navigationVM = new NavigationVM(navigation);
+            navigationVM.setHasChildren(navigationRepository.existsByParent(navigation.getParent()));
+            return navigationVM;
+        });
         return ResponseUtil.wrapPage(page);
+    }
+
+    @GetMapping("/navigation/trees")
+    public List<NavigationTreeDTO> getNavigationTrees() {
+        return navigationService.getAllTrees();
     }
 
     @DeleteMapping("/navigation")

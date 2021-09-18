@@ -26,6 +26,9 @@ public class Navigation {
     // 使用区域
     @Column(name = "region", length = 31)
     private String region;
+    // 优先级
+    @Column(name = "priority")
+    private Integer priority;
 
     @ManyToOne
     private Navigation parent;
@@ -68,6 +71,14 @@ public class Navigation {
 
     public void setRegion(String region) {
         this.region = region;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
     }
 
     public Navigation getParent() {

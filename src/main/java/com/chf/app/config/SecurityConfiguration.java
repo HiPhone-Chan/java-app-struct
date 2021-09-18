@@ -1,8 +1,15 @@
 package com.chf.app.config;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.AccessDecisionManager;
+import org.springframework.security.access.AccessDecisionVoter;
+import org.springframework.security.access.vote.AffirmativeBased;
+import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -11,6 +18,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.expression.WebExpressionVoter;
+import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.filter.CorsFilter;
@@ -20,6 +30,8 @@ import com.chf.app.config.properties.ConfigProperties;
 import com.chf.app.constants.AuthoritiesConstants;
 import com.chf.app.security.jwt.JWTConfigurer;
 import com.chf.app.security.jwt.TokenProvider;
+import com.chf.app.security.rbac.StaffFilterSecurityMetadataSource;
+import com.chf.app.security.rbac.StaffVoter;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -70,7 +82,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .frameOptions().deny().and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
-//                .accessDecisionManager(null)
+//                .c(null)
+//                .withObjectPostProcessor(objectPostProcessor())
                 .antMatchers("/resource/**").permitAll()
                 .antMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
                 .antMatchers("/api/authenticate").permitAll()
@@ -81,6 +94,29 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .httpBasic().and()
                 .apply(new JWTConfigurer(tokenProvider));
         // @formatter:on
+    }
+
+    public ObjectPostProcessor<FilterSecurityInterceptor> objectPostProcessor() {
+        return new ObjectPostProcessor<FilterSecurityInterceptor>() {
+            @Override
+            public <O extends FilterSecurityInterceptor> O postProcess(O fsi) {
+                fsi.setSecurityMetadataSource(staffFilterSecurityMetadataSource(fsi.getSecurityMetadataSource()));
+                return fsi;
+            }
+        };
+    }
+
+//    @Bean
+    public StaffFilterSecurityMetadataSource staffFilterSecurityMetadataSource(
+            FilterInvocationSecurityMetadataSource srcMetadataSource) {
+        return new StaffFilterSecurityMetadataSource(srcMetadataSource);
+    }
+
+    public AccessDecisionManager accessDecisionManager() {
+        List<AccessDecisionVoter<? extends Object>> decisionVoters = Arrays.asList(new WebExpressionVoter(),
+                new StaffVoter());
+
+        return new AffirmativeBased(decisionVoters);
     }
 
 }
