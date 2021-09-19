@@ -59,8 +59,7 @@ public class AccountResource {
         if (!user.isPresent()) {
             throw new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Current user login not found");
         }
-        userService.updateUser(userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail(), userDTO.getLangKey(),
-                userDTO.getImageUrl());
+        userService.updateUser(userDTO.getNickName(), userDTO.getMobile(), userDTO.getImageUrl());
     }
 
     @PostMapping("/account/change-password")

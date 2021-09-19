@@ -25,6 +25,11 @@ To package your application as a war in order to deploy it to an application ser
 mvn -Pprod,war clean verify
 ```
 
+# rbac
+```
+	api需要以/api/staff开始的才会启用rbac功能
+```
+
 # References
 - [jhipster](https://www.jhipster.tech/)
 - [vue-admin](https://github.com/HiPhone-Chan/vue-admin)

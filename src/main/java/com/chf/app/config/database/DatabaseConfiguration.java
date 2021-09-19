@@ -7,9 +7,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.chf.app.constants.SystemConstants;
+import com.chf.app.repository.support.JpaExtRepositoryFactoryBean;
 
 @Configuration
-@EnableJpaRepositories(basePackages = SystemConstants.BASE_PACKAGE + ".repository")
+@EnableJpaRepositories(basePackages = SystemConstants.BASE_PACKAGE
+        + ".repository", repositoryFactoryBeanClass = JpaExtRepositoryFactoryBean.class)
 @EntityScan({ SystemConstants.BASE_PACKAGE, "org.springframework.data.jpa.convert.threeten" })
 @EnableJpaAuditing(auditorAwareRef = "springSecurityAuditorAware")
 @EnableTransactionManagement
