@@ -2,13 +2,22 @@ package com.chf.app.security.rbac;
 
 import java.util.Collection;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.FilterInvocation;
 
+import com.chf.app.constants.StaffConstants;
+import com.chf.app.service.RoleService;
+
 public class StaffVoter implements AccessDecisionVoter<FilterInvocation> {
+
+    private RoleService roleService;
+
+    public StaffVoter(RoleService roleService) {
+        this.roleService = roleService;
+    }
 
     @Override
     public int vote(Authentication authentication, FilterInvocation filterInvocation,
@@ -16,20 +25,17 @@ public class StaffVoter implements AccessDecisionVoter<FilterInvocation> {
         if (authentication == null) {
             return ACCESS_DENIED;
         }
-        int result = ACCESS_ABSTAIN;
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        for (ConfigAttribute attribute : attributes) {
-            if (this.supports(attribute)) {
-                result = ACCESS_DENIED;
-                // Attempt to find a matching granted authority
-                for (GrantedAuthority authority : authorities) {
-                    if (attribute.getAttribute().equals(authority.getAuthority())) {
-                        return ACCESS_GRANTED;
-                    }
-                }
-            }
+
+        String url = filterInvocation.getRequestUrl();
+        if (StringUtils.isEmpty(url) || !url.startsWith(StaffConstants.API_PREFIX)) {
+            return ACCESS_ABSTAIN;
         }
-        return result;
+        String method = filterInvocation.getRequest().getMethod().toLowerCase();
+
+        if (roleService.hasCurrentUserThisAuthority(method, method)) {
+            return ACCESS_GRANTED;
+        }
+        return ACCESS_DENIED;
     }
 
     @Override
@@ -39,7 +45,7 @@ public class StaffVoter implements AccessDecisionVoter<FilterInvocation> {
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return false;
+        return true;
     }
 
 }

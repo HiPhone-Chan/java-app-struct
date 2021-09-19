@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.criteria.Predicate;
+import javax.validation.Valid;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +34,10 @@ public class ApiInfoResource {
     private ApiInfoRepository apiInfoRepository;
 
     @PostMapping("/api-info")
-    public void createApiInfo(@RequestBody ApiInfo apiInfoVM) {
+    public void createApiInfo(@Valid @RequestBody ApiInfo apiInfoVM) {
         ApiInfo apiInfo = new ApiInfo();
         apiInfo.setId(RandomUtil.uuid());
-        apiInfo.setMethod(apiInfoVM.getMethod());
+        apiInfo.setMethod(apiInfoVM.getMethod().toLowerCase());
         apiInfo.setPath(apiInfoVM.getPath());
         apiInfo.setDescription(apiInfoVM.getDescription());
         apiInfoRepository.save(apiInfo);
@@ -45,7 +46,7 @@ public class ApiInfoResource {
     @PutMapping("/api-info")
     public void updateApiInfo(@RequestBody ApiInfo apiInfoVM) {
         apiInfoRepository.findById(apiInfoVM.getId()).ifPresent(apiInfo -> {
-            apiInfo.setMethod(apiInfoVM.getMethod());
+            apiInfo.setMethod(apiInfoVM.getMethod().toLowerCase());
             apiInfo.setPath(apiInfoVM.getPath());
             apiInfo.setDescription(apiInfoVM.getDescription());
             apiInfoRepository.save(apiInfo);

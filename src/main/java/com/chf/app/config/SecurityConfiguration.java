@@ -8,8 +8,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
-import org.springframework.security.access.vote.AffirmativeBased;
-import org.springframework.security.config.annotation.ObjectPostProcessor;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.access.vote.RoleHierarchyVoter;
+import org.springframework.security.access.vote.RoleVoter;
+import org.springframework.security.access.vote.UnanimousBased;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -19,8 +21,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.expression.WebExpressionVoter;
-import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
-import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.filter.CorsFilter;
@@ -30,8 +30,8 @@ import com.chf.app.config.properties.ConfigProperties;
 import com.chf.app.constants.AuthoritiesConstants;
 import com.chf.app.security.jwt.JWTConfigurer;
 import com.chf.app.security.jwt.TokenProvider;
-import com.chf.app.security.rbac.StaffFilterSecurityMetadataSource;
 import com.chf.app.security.rbac.StaffVoter;
+import com.chf.app.service.RoleService;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -46,13 +46,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final SecurityProblemSupport problemSupport;
 
+    private final RoleService roleService;
+
     public SecurityConfiguration(ConfigProperties configProperties, TokenProvider tokenProvider, CorsFilter corsFilter,
-            SecurityProblemSupport problemSupport) {
+            SecurityProblemSupport problemSupport, RoleService roleService) {
         super();
         this.configProperties = configProperties;
         this.tokenProvider = tokenProvider;
         this.corsFilter = corsFilter;
         this.problemSupport = problemSupport;
+        this.roleService = roleService;
     }
 
     @Bean
@@ -82,8 +85,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .frameOptions().deny().and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
-//                .c(null)
-//                .withObjectPostProcessor(objectPostProcessor())
+                .accessDecisionManager(accessDecisionManager())
                 .antMatchers("/resource/**").permitAll()
                 .antMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
                 .antMatchers("/api/authenticate").permitAll()
@@ -96,27 +98,19 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // @formatter:on
     }
 
-    public ObjectPostProcessor<FilterSecurityInterceptor> objectPostProcessor() {
-        return new ObjectPostProcessor<FilterSecurityInterceptor>() {
-            @Override
-            public <O extends FilterSecurityInterceptor> O postProcess(O fsi) {
-                fsi.setSecurityMetadataSource(staffFilterSecurityMetadataSource(fsi.getSecurityMetadataSource()));
-                return fsi;
-            }
-        };
-    }
-
-//    @Bean
-    public StaffFilterSecurityMetadataSource staffFilterSecurityMetadataSource(
-            FilterInvocationSecurityMetadataSource srcMetadataSource) {
-        return new StaffFilterSecurityMetadataSource(srcMetadataSource);
-    }
-
     public AccessDecisionManager accessDecisionManager() {
         List<AccessDecisionVoter<? extends Object>> decisionVoters = Arrays.asList(new WebExpressionVoter(),
-                new StaffVoter());
+                getRoleHierarchyVoter(), new StaffVoter(roleService));
+        return new UnanimousBased(decisionVoters);
+    }
 
-        return new AffirmativeBased(decisionVoters);
+    private RoleVoter getRoleHierarchyVoter() {
+        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+        roleHierarchy.setHierarchy(AuthoritiesConstants.ADMIN + ">" + AuthoritiesConstants.MANAGER);
+        roleHierarchy.setHierarchy(AuthoritiesConstants.MANAGER + ">" + AuthoritiesConstants.STAFF);
+        roleHierarchy.setHierarchy(AuthoritiesConstants.STAFF + ">" + AuthoritiesConstants.USER);
+        roleHierarchy.setHierarchy(AuthoritiesConstants.USER + ">" + AuthoritiesConstants.ANONYMOUS);
+        return new RoleHierarchyVoter(roleHierarchy);
     }
 
 }

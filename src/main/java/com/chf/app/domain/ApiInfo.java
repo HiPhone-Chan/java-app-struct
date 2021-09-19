@@ -5,17 +5,22 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "api_info", indexes = { @Index(columnList = "method"), @Index(columnList = "path") })
+@Table(name = "api_info", uniqueConstraints = { @UniqueConstraint(columnNames = { "method", "path" }) }, indexes = {
+        @Index(columnList = "method"), @Index(columnList = "path") })
 public class ApiInfo {
 
     @Id
     private String id;
 
+    @NotNull
     @Column(name = "method", length = 15)
     private String method;
 
+    @NotNull
     @Column(name = "path", length = 255)
     private String path;
 
