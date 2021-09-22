@@ -2,7 +2,6 @@ package com.chf.app.web.rest.bpm;
 
 import static com.chf.app.constants.AuthoritiesConstants.ADMIN;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,10 +24,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.chf.app.constants.ErrorCodeContants;
-import com.chf.app.exception.ServiceException;
-import com.chf.app.security.SecurityUtils;
-import com.chf.app.service.bpm.BpmEventService;
+import com.chf.app.service.bpm.BpmCommonService;
+import com.chf.app.web.vm.bpm.CreateTaskVM;
+import com.chf.app.web.vm.bpm.OprTaskVM;
 
 @RestController
 @RequestMapping("/api/admin/bpm")
@@ -47,14 +45,14 @@ public class BpmAdminTaskResource {
     private HistoryService historyService;
 
     @Autowired
-    private BpmEventService bpmEventService;
+    private BpmCommonService bpmEventService;
 
     @Secured(ADMIN)
     @PostMapping("/task")
-    public Map<?, ?> createTask(String key, @RequestParam(name = "assignee", required = false) String assignee) {
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("approveUser", assignee);
-        String processInstanceId = runtimeService.startProcessInstanceByKey(key, variables).getProcessInstanceId();
+    public Map<?, ?> createTask(@RequestBody CreateTaskVM createTaskVM) {
+        String key = createTaskVM.getKey();
+        String processInstanceId = runtimeService.startProcessInstanceByKey(key, createTaskVM.getParams())
+                .getProcessInstanceId();
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
         return bpmEventService.convertTask(task);
     }
@@ -83,25 +81,15 @@ public class BpmAdminTaskResource {
 
     @PostMapping("/task/complete")
     @Secured(ADMIN)
-    public void completeTask(@RequestBody Map<String, Object> body) {
-        String taskId = (String) body.get("taskId");
-        taskService.complete(taskId, body);
-    }
-
-    @GetMapping("/task/count")
-    @Secured(ADMIN)
-    public long countTask() {
-        String assignee = SecurityUtils.getCurrentUserLogin()
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Login could not be found"));
-        return taskService.createTaskQuery().taskAssignee(assignee).count();
+    public void completeTask(@RequestBody OprTaskVM oprTaskVM) {
+        String taskId = oprTaskVM.getTaskId();
+        taskService.complete(taskId, oprTaskVM.getParams());
     }
 
     @GetMapping("/tasks/unfinish")
     @Secured(ADMIN)
     public List<?> getHistory() {
-        String login = SecurityUtils.getCurrentUserLogin()
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Login could not be found"));
-        return historyService.createHistoricProcessInstanceQuery().startedBy(login).unfinished().list();
+        return historyService.createHistoricProcessInstanceQuery().unfinished().list();
     }
 
     // 当前task的上一个task

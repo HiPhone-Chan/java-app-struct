@@ -3,24 +3,28 @@ package com.chf.app.service.bpm;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RepositoryService;
+import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
+import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.task.Task;
-import org.camunda.bpm.spring.boot.starter.event.PostDeployEvent;
-import org.camunda.bpm.spring.boot.starter.event.PreUndeployEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import com.chf.app.constants.ErrorCodeContants;
+import com.chf.app.exception.ServiceException;
+import com.chf.app.security.SecurityUtils;
+
 @Service
-public class BpmEventService {
+public class BpmCommonService {
 
-    private static final Logger log = LoggerFactory.getLogger(BpmEventService.class);
+//    private static final Logger log = LoggerFactory.getLogger(BpmEventService.class);
 
-    boolean processApplicationStopped;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Autowired
     private RepositoryService repositoryService;
@@ -28,23 +32,43 @@ public class BpmEventService {
     @Autowired
     private HistoryService historyService;
 
-    @EventListener
-    public void onPostDeploy(PostDeployEvent event) {
-        log.info("postDeploy: {}", event);
-        processApplicationStopped = false;
-    }
-
-    @EventListener
-    public void onPreUndeploy(PreUndeployEvent event) {
-        log.info("preUndeploy: {}", event);
-        processApplicationStopped = true;
-    }
+    @Autowired
+    private TaskService taskService;
 
     public boolean isProcessInstanceFinished(String processInstanceId) {
         final HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
                 .processInstanceId(processInstanceId).singleResult();
-
         return historicProcessInstance != null && historicProcessInstance.getEndTime() != null;
+    }
+
+    public ProcessService getProcessService(String key) {
+        String serviceName = StringUtils.uncapitalize(key) + "Service";
+        ProcessService processService = applicationContext.getBean(serviceName, ProcessService.class);
+        return processService;
+    }
+
+    public Task getCurrentTask(String taskId) {
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            throw new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Task not be found");
+        }
+        String assignee = task.getAssignee();
+        String login = SecurityUtils.getCurrentUserLogin()
+                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Login could not be found"));
+        if (!login.equals(assignee)) {
+            throw new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Task not be found");
+        }
+        return task;
+    }
+
+    public String getProcessDefinitionKey(String taskId) {
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+
+        if (task == null) {
+            throw new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Task not be found");
+        }
+        ProcessDefinition processDefinition = repositoryService.getProcessDefinition(task.getProcessDefinitionId());
+        return processDefinition.getKey();
     }
 
     public Map<?, ?> convertTask(Task task) {
