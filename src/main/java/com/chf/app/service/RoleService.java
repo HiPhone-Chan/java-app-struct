@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.chf.app.constants.AuthoritiesConstants;
 import com.chf.app.domain.StaffRole;
 import com.chf.app.repository.ApiInfoRepository;
 import com.chf.app.repository.RoleApiRepository;
@@ -31,6 +32,10 @@ public class RoleService {
     private UserRepository userRepository;
 
     public boolean hasCurrentUserThisAuthority(String method, String path) {
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.MANAGER)) {
+            return true;
+        }
+
         return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithAuthoritiesByLogin).map(user -> {
             return apiInfoRepository.findOneByMethodAndPath(method, path).map(apiInfo -> {
                 List<StaffRole> neededList = roleApiRepository.findAllByIdApiInfo(apiInfo).stream().map(roleApi -> {

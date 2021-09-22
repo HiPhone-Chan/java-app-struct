@@ -1,15 +1,30 @@
 package com.chf.app.web.vm;
 
+import java.util.List;
+
+import javax.validation.constraints.NotNull;
+
 public class UserRoleVM {
 
-    private String roleId;
+    @NotNull
+    private String login;
 
-    public String getRoleId() {
-        return roleId;
+    private List<String> roleIds;
+
+    public String getLogin() {
+        return login;
     }
 
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public List<String> getRoleIds() {
+        return roleIds;
+    }
+
+    public void setRoleIds(List<String> roleIds) {
+        this.roleIds = roleIds;
     }
 
 }

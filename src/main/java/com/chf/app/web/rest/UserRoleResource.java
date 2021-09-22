@@ -3,6 +3,8 @@ package com.chf.app.web.rest;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,8 +23,8 @@ import com.chf.app.domain.UserRole;
 import com.chf.app.domain.id.UserRoleId;
 import com.chf.app.exception.ServiceException;
 import com.chf.app.repository.StaffRoleRepository;
+import com.chf.app.repository.UserRepository;
 import com.chf.app.repository.UserRoleRepository;
-import com.chf.app.service.UserService;
 import com.chf.app.web.util.ResponseUtil;
 import com.chf.app.web.vm.UserRoleVM;
 
@@ -38,28 +40,28 @@ public class UserRoleResource {
     private StaffRoleRepository staffRoleRepository;
 
     @Autowired
-    private UserService userService;
+    private UserRepository userRepository;
 
     @PutMapping("/user-role")
-    public void updateUserRole(@RequestBody List<UserRoleVM> userRoleVMList) {
-        userService.getUserWithAuthorities().ifPresent(user -> {
-            userRoleRepository.deleteByIdUser(user);
+    public void updateUserRole(@Valid @RequestBody UserRoleVM userRoleVM) {
+        User user = userRepository.findOneByLogin(userRoleVM.getLogin())
+                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+        userRoleRepository.deleteByIdUser(user);
 
-            List<UserRole> list = new ArrayList<>();
-            for (UserRoleVM userRoleVM : userRoleVMList) {
-                staffRoleRepository.findById(userRoleVM.getRoleId()).ifPresent(role -> {
-                    UserRole userRole = new UserRole();
-                    userRole.setId(new UserRoleId(user, role));
-                    list.add(userRole);
-                });
-            }
-            userRoleRepository.saveAll(list);
-        });
+        List<UserRole> list = new ArrayList<>();
+        for (String roleId : userRoleVM.getRoleIds()) {
+            staffRoleRepository.findById(roleId).ifPresent(role -> {
+                UserRole userRole = new UserRole();
+                userRole.setId(new UserRoleId(user, role));
+                list.add(userRole);
+            });
+        }
+        userRoleRepository.saveAll(list);
     }
 
     @GetMapping("/user-roles")
-    public ResponseEntity<List<StaffRole>> getUserRoles(Pageable pageable) {
-        User user = userService.getUserWithAuthorities()
+    public ResponseEntity<List<StaffRole>> getUserRoles(Pageable pageable, String login) {
+        User user = userRepository.findOneByLogin(login)
                 .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
         Page<StaffRole> page = userRoleRepository.findByIdUser(pageable, user).map(userRole -> {
             return userRole.getId().getRole();
