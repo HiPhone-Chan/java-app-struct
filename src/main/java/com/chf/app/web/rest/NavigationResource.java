@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.chf.app.constants.ErrorCodeContants;
 import com.chf.app.domain.Navigation;
 import com.chf.app.exception.ServiceException;
+import com.chf.app.repository.NavigationApiRepository;
 import com.chf.app.repository.NavigationRepository;
 import com.chf.app.service.NavigationService;
 import com.chf.app.service.dto.NavigationTreeDTO;
@@ -36,6 +37,9 @@ public class NavigationResource {
 
     @Autowired
     private NavigationRepository navigationRepository;
+
+    @Autowired
+    private NavigationApiRepository navigationApiRepository;
 
     @Autowired
     private NavigationService navigationService;
@@ -92,7 +96,8 @@ public class NavigationResource {
         };
         Page<NavigationVM> page = navigationRepository.findAll(spec, pageable).map(navigation -> {
             NavigationVM navigationVM = new NavigationVM(navigation);
-            navigationVM.setHasChildren(navigationRepository.existsByParent(navigation.getParent()));
+            navigationVM.setHasChildren(navigationRepository.existsByParent(navigation));
+            navigationVM.setHasApis(navigationApiRepository.existsByIdNavigation(navigation));
             return navigationVM;
         });
         return ResponseUtil.wrapPage(page);
