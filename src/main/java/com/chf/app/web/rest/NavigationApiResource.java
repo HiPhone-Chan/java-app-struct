@@ -5,8 +5,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,7 +38,7 @@ public class NavigationApiResource {
     @Autowired
     private NavigationRepository navigationRepository;
 
-    @PutMapping("/navigation-api")
+    @PostMapping("/navigation-api")
     public void createNavigationApi(@RequestBody NavigationApiVM navigationApiVM) {
         Navigation navigation = navigationRepository.findById(navigationApiVM.getNavId())
                 .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
@@ -57,6 +58,17 @@ public class NavigationApiResource {
             return navigationApi.getId().getApiInfo();
         }).collect(Collectors.toList());
         return page;
+    }
+
+    @DeleteMapping("/navigation-api")
+    public void deleteNavigationApi(@RequestBody NavigationApiVM navigationApiVM) {
+        Navigation navigation = navigationRepository.findById(navigationApiVM.getNavId())
+                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+        ApiInfo apiInfo = apiInfoRepository.findById(navigationApiVM.getApiId())
+                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+        NavigationApi navigationApi = new NavigationApi();
+        navigationApi.setId(new NavigationApiId(navigation, apiInfo));
+        navigationApiRepository.delete(navigationApi);
     }
 
 }
