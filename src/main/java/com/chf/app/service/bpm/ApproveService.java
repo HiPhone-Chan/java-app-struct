@@ -1,4 +1,4 @@
-package com.chf.app.service;
+package com.chf.app.service.bpm;
 
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+
+// 审批业务
 
 @Service
 public class ApproveService {

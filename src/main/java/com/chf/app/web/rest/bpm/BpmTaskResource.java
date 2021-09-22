@@ -1,6 +1,6 @@
-package com.chf.app.web.rest;
+package com.chf.app.web.rest.bpm;
 
-import static com.chf.app.constants.AuthoritiesConstants.MANAGER;
+import static com.chf.app.constants.AuthoritiesConstants.STAFF;
 
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.FormService;
 import org.camunda.bpm.engine.HistoryService;
-import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
@@ -29,9 +28,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.chf.app.constants.ErrorCodeContants;
 import com.chf.app.exception.ServiceException;
 import com.chf.app.security.SecurityUtils;
+import com.chf.app.service.bpm.BpmEventService;
 
 @RestController
-@RequestMapping("/api/bpm")
+@RequestMapping("/api/admin/bpm")
 public class BpmTaskResource {
 
     @Autowired
@@ -47,9 +47,9 @@ public class BpmTaskResource {
     private HistoryService historyService;
 
     @Autowired
-    private RepositoryService repositoryService;
+    private BpmEventService bpmEventService;
 
-    @Secured(MANAGER)
+    @Secured(STAFF)
     @PostMapping("/task")
     public Map<?, ?> createTask(@RequestBody Map<String, String> body) {
         String assignee = SecurityUtils.getCurrentUserLogin()
@@ -60,11 +60,11 @@ public class BpmTaskResource {
         variables.put("approveUser", assignee);
         String processInstanceId = runtimeService.startProcessInstanceByKey(key, variables).getProcessInstanceId();
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
-        return this.convertTask(task);
+        return bpmEventService.convertTask(task);
     }
 
     @GetMapping("/tasks")
-    @Secured(MANAGER)
+    @Secured(STAFF)
     public List<?> getTasks(@RequestParam Map<String, String> param) {
         // TODO 检查taskId
         String assignee = SecurityUtils.getCurrentUserLogin()
@@ -73,29 +73,26 @@ public class BpmTaskResource {
         if (StringUtils.isNotEmpty(assignee)) {
             taskQuery = taskQuery.taskAssignee(assignee);
         }
-        return taskQuery.listPage(0, 100).stream().map(this::convertTask).collect(Collectors.toList());
+        return taskQuery.listPage(0, 100).stream().map(bpmEventService::convertTask).collect(Collectors.toList());
     }
 
     @GetMapping("/task/form/variables")
-    @Secured(MANAGER)
+    @Secured(STAFF)
     public Map<String, Object> getTaskFormVariables(@RequestParam String taskId) {
         // TODO 检查taskId
-        String assignee = SecurityUtils.getCurrentUserLogin()
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Login could not be found"));
         return formService.getTaskFormVariables(taskId);
     }
 
     @DeleteMapping("/task")
-    @Secured(MANAGER)
+    @Secured(STAFF)
     public void deleteTask(@RequestParam String taskId) {
-        // TODO 检查taskId
-        String assignee = SecurityUtils.getCurrentUserLogin()
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Login could not be found"));
+        // 检查taskId
+        getTask(taskId);
         taskService.deleteTask(taskId);
     }
 
     @PostMapping("/task/complete")
-    @Secured(MANAGER)
+    @Secured(STAFF)
     public void completeTask(@RequestBody Map<String, String> body) {
         String taskId = body.get("taskId");
         String approveUser = body.get("approveUser");
@@ -110,7 +107,7 @@ public class BpmTaskResource {
     }
 
     @GetMapping("/task/count")
-    @Secured(MANAGER)
+    @Secured(STAFF)
     public long countTask() {
         String assignee = SecurityUtils.getCurrentUserLogin()
                 .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Login could not be found"));
@@ -118,7 +115,7 @@ public class BpmTaskResource {
     }
 
     @GetMapping("/tasks/unfinish")
-    @Secured(MANAGER)
+    @Secured(STAFF)
     public List<?> getHistory() {
         String login = SecurityUtils.getCurrentUserLogin()
                 .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Login could not be found"));
@@ -127,28 +124,29 @@ public class BpmTaskResource {
 
     // 当前task的上一个task
     @GetMapping("/tasks/last")
-    @Secured(MANAGER)
+    @Secured(STAFF)
     public Map<?, ?> getLastHistory(@RequestParam String taskId) {
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        Task task = getTask(taskId);
         String processDefinitionId = task.getProcessDefinitionId();
         HistoricTaskInstance lastHisttory = historyService.createHistoricTaskInstanceQuery()
                 .processDefinitionId(processDefinitionId).orderByHistoricTaskInstanceEndTime().desc().listPage(0, 1)
                 .get(0);
         Task lastTask = taskService.createTaskQuery().taskId(lastHisttory.getId()).singleResult();
-        return convertTask(lastTask);
+        return bpmEventService.convertTask(lastTask);
     }
 
-    private Map<?, ?> convertTask(Task task) {
-        Map<String, String> m = new HashMap<>();
-        m.put("id", task.getId());
-        m.put("assignee", task.getAssignee());
-        m.put("name", task.getName());
-        m.put("owner", task.getOwner());
-        m.put("taskKey", task.getTaskDefinitionKey());
-        String processDefinitionId = task.getProcessDefinitionId();
-        String key = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId)
-                .singleResult().getKey();
-        m.put("processKey", key);
-        return m;
+    private Task getTask(String taskId) {
+
+        Task task = getTask(taskId);
+        if (task != null) {
+            String assignee = task.getAssignee();
+            String login = SecurityUtils.getCurrentUserLogin().orElseThrow(
+                    () -> new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Login could not be found"));
+            if (login.equals(assignee)) {
+                throw new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Task not be found");
+            }
+        }
+        return task;
     }
+
 }

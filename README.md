@@ -1,6 +1,6 @@
 java-app-struct
 ===============
-	java起手工程(带工作流)
+	java起手工程, 基于rbac分支(带工作流)
 
 # Develop
 To start your application in the dev profile, run:
