@@ -47,14 +47,12 @@ public class AccountResource {
 
     @GetMapping("/account")
     public AdminUserDTO getAccount() {
-        return userService.getUserWithAuthorities().map(AdminUserDTO::new)
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA, "User could not be found"));
+        return userService.getUserWithAuthorities().map(AdminUserDTO::new).orElseThrow();
     }
 
     @PostMapping("/account")
     public void saveAccount(@Valid @RequestBody AdminUserDTO userDTO) {
-        String userLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(
-                () -> new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Current user login not found"));
+        String userLogin = SecurityUtils.getCurrentUserLogin().orElseThrow();
         Optional<User> user = userRepository.findOneByLogin(userLogin);
         if (!user.isPresent()) {
             throw new ServiceException(ErrorCodeContants.LACK_OF_DATA, "Current user login not found");

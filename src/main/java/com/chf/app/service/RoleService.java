@@ -34,6 +34,8 @@ public class RoleService {
     public boolean hasCurrentUserThisAuthority(String method, String path) {
         if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.MANAGER)) {
             return true;
+        } else if (!SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.STAFF)) {
+            return false;
         }
 
         return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithAuthoritiesByLogin).map(user -> {

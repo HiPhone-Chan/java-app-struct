@@ -10,6 +10,8 @@ import com.chf.app.domain.id.NavigationApiId;
 
 public interface NavigationApiRepository extends JpaRepository<NavigationApi, NavigationApiId> {
 
+    boolean existsByIdNavigation(Navigation navigation);
+
     List<NavigationApi> findAllByIdNavigation(Navigation navigation);
 
 }

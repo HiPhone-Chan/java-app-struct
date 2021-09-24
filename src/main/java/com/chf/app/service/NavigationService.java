@@ -22,7 +22,7 @@ public class NavigationService {
     public List<NavigationTreeDTO> getAllTrees() {
         List<Navigation> children = navigationRepository.findAllByParent(null);
         List<NavigationTreeDTO> list = new ArrayList<>();
-        if (!CollectionUtils.isNotEmpty(children)) {
+        if (CollectionUtils.isNotEmpty(children)) {
             for (Navigation child : children) {
                 list.add(getTree(child));
             }

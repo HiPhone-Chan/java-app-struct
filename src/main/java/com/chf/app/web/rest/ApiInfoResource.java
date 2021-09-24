@@ -27,7 +27,7 @@ import com.chf.app.utils.RandomUtil;
 import com.chf.app.web.util.ResponseUtil;
 
 @RestController
-@RequestMapping("/api/staff")
+@RequestMapping("/api/manager")
 public class ApiInfoResource {
 
     @Autowired

@@ -29,7 +29,7 @@ import com.chf.app.web.util.ResponseUtil;
 import com.chf.app.web.vm.UserRoleVM;
 
 @RestController
-@RequestMapping("/api/staff")
+@RequestMapping("/api/manager")
 @Transactional
 public class UserRoleResource {
 

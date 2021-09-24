@@ -24,7 +24,7 @@ import com.chf.app.web.util.ResponseUtil;
 import com.chf.app.web.vm.OrganizationVM;
 
 @RestController
-@RequestMapping("/api/staff")
+@RequestMapping("/api/manager")
 public class OrganizationResource {
 
     @Autowired
