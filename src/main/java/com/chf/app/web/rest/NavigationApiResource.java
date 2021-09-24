@@ -25,7 +25,7 @@ import com.chf.app.repository.NavigationRepository;
 import com.chf.app.web.vm.NavigationApiVM;
 
 @RestController
-@RequestMapping("/api/staff")
+@RequestMapping("/api/manager")
 @Transactional
 public class NavigationApiResource {
 

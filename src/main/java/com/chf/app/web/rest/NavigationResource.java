@@ -32,7 +32,7 @@ import com.chf.app.web.util.ResponseUtil;
 import com.chf.app.web.vm.NavigationVM;
 
 @RestController
-@RequestMapping("/api/staff")
+@RequestMapping("/api/manager")
 public class NavigationResource {
 
     @Autowired

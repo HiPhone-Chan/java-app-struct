@@ -28,7 +28,7 @@ import com.chf.app.web.vm.NavigationRoleVM;
 import com.chf.app.web.vm.NavigationVM;
 
 @RestController
-@RequestMapping("/api/staff")
+@RequestMapping("/api/manager")
 @Transactional
 public class NavigationRoleResource {
 

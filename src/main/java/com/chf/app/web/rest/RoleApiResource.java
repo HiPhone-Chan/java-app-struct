@@ -25,7 +25,7 @@ import com.chf.app.repository.StaffRoleRepository;
 import com.chf.app.web.vm.RoleApiVM;
 
 @RestController
-@RequestMapping("/api/staff")
+@RequestMapping("/api/manager")
 @Transactional
 public class RoleApiResource {
 
@@ -55,8 +55,8 @@ public class RoleApiResource {
     }
 
     @GetMapping("/role-api/apis")
-    public List<ApiInfo> getRoleApis(@RequestParam String navId) {
-        StaffRole role = roleRepository.findById(navId)
+    public List<ApiInfo> getRoleApis(@RequestParam String  roleId) {
+        StaffRole role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
 
         List<ApiInfo> page = roleApiRepository.findAllByIdRole(role).stream().map(roleApi -> {
