@@ -61,7 +61,7 @@ public class NavigationApiResource {
     }
 
     @DeleteMapping("/navigation-api")
-    public void deleteNavigationApi(@RequestBody NavigationApiVM navigationApiVM) {
+    public void deleteNavigationApi(@RequestParam NavigationApiVM navigationApiVM) {
         Navigation navigation = navigationRepository.findById(navigationApiVM.getNavId())
                 .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
         ApiInfo apiInfo = apiInfoRepository.findById(navigationApiVM.getApiId())

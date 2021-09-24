@@ -2,6 +2,8 @@ package com.chf.app.security.rbac;
 
 import java.util.Collection;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.ConfigAttribute;
@@ -26,13 +28,21 @@ public class StaffVoter implements AccessDecisionVoter<FilterInvocation> {
             return ACCESS_DENIED;
         }
 
-        String url = filterInvocation.getRequestUrl();
-        if (StringUtils.isEmpty(url) || !url.startsWith(StaffConstants.API_PREFIX)) {
+        HttpServletRequest request = filterInvocation.getHttpRequest();
+        String requestURI = request.getRequestURI();
+        String contextPath = request.getContextPath();
+
+        String path = requestURI;
+        if (StringUtils.isNotEmpty(contextPath) && !contextPath.equals("/")) {
+            path = path.substring(contextPath.length());
+        }
+
+        if (StringUtils.isEmpty(path) || !path.startsWith(StaffConstants.API_PREFIX)) {
             return ACCESS_ABSTAIN;
         }
         String method = filterInvocation.getRequest().getMethod().toLowerCase();
 
-        if (roleService.hasCurrentUserThisAuthority(method, method)) {
+        if (roleService.hasCurrentUserThisAuthority(method, path)) {
             return ACCESS_GRANTED;
         }
         return ACCESS_DENIED;
