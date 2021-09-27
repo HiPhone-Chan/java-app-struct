@@ -47,7 +47,7 @@ public class NavigationRoleResource {
             navigationRoleRepository.deleteByIdRole(role);
 
             List<NavigationRole> list = new ArrayList<>();
-            for (String navId : navigationRoleVM.getNavigationId()) {
+            for (String navId : navigationRoleVM.getNavigationIds()) {
                 navigationRepository.findById(navId).ifPresent(navigation -> {
                     NavigationRole navigationRole = new NavigationRole();
                     navigationRole.setId(new NavigationRoleId(navigation, role));

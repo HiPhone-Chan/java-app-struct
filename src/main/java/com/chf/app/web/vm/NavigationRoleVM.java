@@ -6,7 +6,7 @@ public class NavigationRoleVM {
 
     private String roleId;
 
-    private List<String> navigationId;
+    private List<String> navigationIds;
 
     public String getRoleId() {
         return roleId;
@@ -16,12 +16,12 @@ public class NavigationRoleVM {
         this.roleId = roleId;
     }
 
-    public List<String> getNavigationId() {
-        return navigationId;
+    public List<String> getNavigationIds() {
+        return navigationIds;
     }
 
-    public void setNavigationId(List<String> navigationId) {
-        this.navigationId = navigationId;
+    public void setNavigationIds(List<String> navigationIds) {
+        this.navigationIds = navigationIds;
     }
 
 }

@@ -44,7 +44,7 @@ public class RoleApiResource {
                 .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
 
         List<RoleApi> list = new ArrayList<>();
-        for (String apiId : roleApiVM.getApiId()) {
+        for (String apiId : roleApiVM.getApiIds()) {
             apiInfoRepository.findById(apiId).ifPresent(apiInfo -> {
                 RoleApi roleApi = new RoleApi();
                 roleApi.setId(new RoleApiId(role, apiInfo));
