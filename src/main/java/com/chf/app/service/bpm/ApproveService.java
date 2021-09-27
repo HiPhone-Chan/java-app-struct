@@ -49,11 +49,11 @@ public class ApproveService implements ProcessService {
     @Override
     public Map<String, Object> checkCompleteParam(Map<String, Object> request) {
         String approveUser = (String) request.get("approveUser");
-        String isApproved = (String) request.get("isApproved");
+        Boolean isApproved = (Boolean) request.get("isApproved");
 
         Map<String, Object> variables = new HashMap<>();
         variables.put("approveUser", approveUser);
-        variables.put("isApproved", Boolean.valueOf(isApproved));
+        variables.put("isApproved", isApproved);
         return variables;
     }
 

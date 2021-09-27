@@ -17,6 +17,9 @@ public class Organization {
     @Column(name = "name", length = 31)
     private String name;
 
+    @Column(name = "type", length = 31)
+    private String type;
+
     @ManyToOne
     private Organization parent;
 
@@ -34,6 +37,14 @@ public class Organization {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public Organization getParent() {
