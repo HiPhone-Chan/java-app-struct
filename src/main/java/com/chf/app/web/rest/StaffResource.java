@@ -95,7 +95,7 @@ public class StaffResource {
         User user = Optional.of(login).flatMap(userRepository::findOneByLogin).orElseThrow();
         if (user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet())
                 .contains(AuthoritiesConstants.STAFF)) {
-            userService.changePasswordBySuperior(login, passwordChangeDTO.getCurrentPassword(),
+            userService.changePasswordBySuperior(user, passwordChangeDTO.getCurrentPassword(),
                     passwordChangeDTO.getNewPassword());
         }
     }
