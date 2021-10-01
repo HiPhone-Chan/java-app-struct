@@ -1,7 +1,5 @@
 package com.chf.app.web.rest;
 
-import static com.chf.app.constants.AuthoritiesConstants.ADMIN;
-
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -60,7 +57,6 @@ public class UserResource {
     }
 
     @PostMapping("/user")
-    @Secured(ADMIN)
     public User createUser(@Valid @RequestBody AdminUserDTO userDTO) throws URISyntaxException {
         log.debug("REST request to save User : {}", userDTO);
 
@@ -74,7 +70,6 @@ public class UserResource {
     }
 
     @PutMapping("/user")
-    @Secured(ADMIN)
     public ResponseEntity<UserDTO> updateUser(@Valid @RequestBody AdminUserDTO userDTO) {
         log.debug("REST request to update User : {}", userDTO);
         Optional<User> existingUser = userRepository.findOneByLogin(userDTO.getLogin().toLowerCase());
@@ -87,22 +82,20 @@ public class UserResource {
     }
 
     @PostMapping("/user/change-password/{login:" + SystemConstants.LOGIN_REGEX + "}")
-    @Secured(ADMIN)
     public void changePassword(@PathVariable String login, @RequestBody PasswordChangeDTO passwordChangeDTO) {
         if (!ManagedUserVM.checkPasswordLength(passwordChangeDTO.getNewPassword())) {
             throw new ServiceException(ErrorCodeContants.INVALID_PASSWORD, "Password is short.");
         }
-        userService.changePassword(login, passwordChangeDTO.getCurrentPassword(), passwordChangeDTO.getNewPassword());
+        userService.changePasswordBySuperior(login, passwordChangeDTO.getCurrentPassword(),
+                passwordChangeDTO.getNewPassword());
     }
 
     @GetMapping("/user/authorities")
-    @Secured(ADMIN)
     public List<String> getAuthorities() {
         return userService.getAuthorities();
     }
 
     @GetMapping("/users")
-    @Secured(ADMIN)
     public ResponseEntity<List<AdminUserDTO>> getUsers(Pageable pageable,
             @RequestParam(name = "authority", required = false) String authority) {
         Specification<User> spec = (root, query, criteriaBuilder) -> {
@@ -122,21 +115,18 @@ public class UserResource {
     }
 
     @GetMapping("/users/{login:" + SystemConstants.LOGIN_REGEX + "}")
-    @Secured(ADMIN)
     public ResponseEntity<UserDTO> getUser(@PathVariable String login) {
         log.debug("REST request to get User : {}", login);
         return ResponseUtil.wrapOrNotFound(userService.getUserWithAuthoritiesByLogin(login).map(UserDTO::new));
     }
 
     @DeleteMapping("/user/{login:" + SystemConstants.LOGIN_REGEX + "}")
-    @Secured(ADMIN)
     public void deleteUser(@PathVariable String login) {
         log.debug("REST request to delete User: {}", login);
         userService.deleteUser(login);
     }
 
     @GetMapping("/user/check/{login:" + SystemConstants.LOGIN_REGEX + "}")
-    @Secured(ADMIN)
     public boolean checkLogin(@PathVariable String login) {
         return userRepository.existsByLogin(login);
     }
