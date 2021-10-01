@@ -13,12 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.chf.app.constants.ErrorCodeContants;
 import com.chf.app.domain.ApiInfo;
 import com.chf.app.domain.Navigation;
 import com.chf.app.domain.NavigationApi;
 import com.chf.app.domain.id.NavigationApiId;
-import com.chf.app.exception.ServiceException;
 import com.chf.app.repository.ApiInfoRepository;
 import com.chf.app.repository.NavigationApiRepository;
 import com.chf.app.repository.NavigationRepository;
@@ -40,10 +38,8 @@ public class NavigationApiResource {
 
     @PostMapping("/navigation-api")
     public void createNavigationApi(@RequestBody NavigationApiVM navigationApiVM) {
-        Navigation navigation = navigationRepository.findById(navigationApiVM.getNavId())
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
-        ApiInfo apiInfo = apiInfoRepository.findById(navigationApiVM.getApiId())
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+        Navigation navigation = navigationRepository.findById(navigationApiVM.getNavId()).orElseThrow();
+        ApiInfo apiInfo = apiInfoRepository.findById(navigationApiVM.getApiId()).orElseThrow();
         NavigationApi navigationApi = new NavigationApi();
         navigationApi.setId(new NavigationApiId(navigation, apiInfo));
         navigationApiRepository.save(navigationApi);
@@ -51,8 +47,7 @@ public class NavigationApiResource {
 
     @GetMapping("/navigation-api/apis")
     public List<ApiInfo> getNavigationApis(@RequestParam String navId) {
-        Navigation navigation = navigationRepository.findById(navId)
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+        Navigation navigation = navigationRepository.findById(navId).orElseThrow();
 
         List<ApiInfo> page = navigationApiRepository.findAllByIdNavigation(navigation).stream().map(navigationApi -> {
             return navigationApi.getId().getApiInfo();
@@ -61,11 +56,9 @@ public class NavigationApiResource {
     }
 
     @DeleteMapping("/navigation-api")
-    public void deleteNavigationApi(@RequestParam NavigationApiVM navigationApiVM) {
-        Navigation navigation = navigationRepository.findById(navigationApiVM.getNavId())
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
-        ApiInfo apiInfo = apiInfoRepository.findById(navigationApiVM.getApiId())
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+    public void deleteNavigationApi(@RequestParam String navId, @RequestParam String apiId) {
+        Navigation navigation = navigationRepository.findById(navId).orElseThrow();
+        ApiInfo apiInfo = apiInfoRepository.findById(apiId).orElseThrow();
         NavigationApi navigationApi = new NavigationApi();
         navigationApi.setId(new NavigationApiId(navigation, apiInfo));
         navigationApiRepository.delete(navigationApi);

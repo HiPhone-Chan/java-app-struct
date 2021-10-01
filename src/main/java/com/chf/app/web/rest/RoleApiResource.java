@@ -13,12 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.chf.app.constants.ErrorCodeContants;
 import com.chf.app.domain.ApiInfo;
 import com.chf.app.domain.RoleApi;
 import com.chf.app.domain.StaffRole;
 import com.chf.app.domain.id.RoleApiId;
-import com.chf.app.exception.ServiceException;
 import com.chf.app.repository.ApiInfoRepository;
 import com.chf.app.repository.RoleApiRepository;
 import com.chf.app.repository.StaffRoleRepository;
@@ -40,8 +38,7 @@ public class RoleApiResource {
 
     @PutMapping("/role-api")
     public void saveRoleApi(@RequestBody RoleApiVM roleApiVM) {
-        StaffRole role = roleRepository.findById(roleApiVM.getRoleId())
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+        StaffRole role = roleRepository.findById(roleApiVM.getRoleId()).orElseThrow();
 
         List<RoleApi> list = new ArrayList<>();
         for (String apiId : roleApiVM.getApiIds()) {
@@ -51,13 +48,13 @@ public class RoleApiResource {
                 list.add(roleApi);
             });
         }
+        roleApiRepository.deleteByIdRole(role);
         roleApiRepository.saveAll(list);
     }
 
     @GetMapping("/role-api/apis")
-    public List<ApiInfo> getRoleApis(@RequestParam String  roleId) {
-        StaffRole role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+    public List<ApiInfo> getRoleApis(@RequestParam String roleId) {
+        StaffRole role = roleRepository.findById(roleId).orElseThrow();
 
         List<ApiInfo> page = roleApiRepository.findAllByIdRole(role).stream().map(roleApi -> {
             return roleApi.getId().getApiInfo();

@@ -22,6 +22,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,8 +38,10 @@ import com.chf.app.exception.ServiceException;
 import com.chf.app.repository.UserRepository;
 import com.chf.app.service.UserService;
 import com.chf.app.service.dto.AdminUserDTO;
+import com.chf.app.service.dto.PasswordChangeDTO;
 import com.chf.app.service.dto.UserDTO;
 import com.chf.app.web.util.ResponseUtil;
+import com.chf.app.web.vm.ManagedUserVM;
 
 @RestController
 @RequestMapping("/api/manager")
@@ -81,6 +84,20 @@ public class StaffResource {
             return ResponseUtil.wrapOrNotFound(updatedUser);
         }
         return ResponseUtil.wrapOrNotFound(Optional.empty());
+    }
+
+    @PutMapping("/staff/change-password")
+    public void changePassword(@PathVariable String login, @RequestBody PasswordChangeDTO passwordChangeDTO) {
+        if (!ManagedUserVM.checkPasswordLength(passwordChangeDTO.getNewPassword())) {
+            throw new ServiceException(ErrorCodeContants.INVALID_PASSWORD, "Password is short.");
+        }
+
+        User user = Optional.of(login).flatMap(userRepository::findOneByLogin).orElseThrow();
+        if (user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet())
+                .contains(AuthoritiesConstants.STAFF)) {
+            userService.changePassword(user.getLogin(), passwordChangeDTO.getCurrentPassword(),
+                    passwordChangeDTO.getNewPassword());
+        }
     }
 
     @GetMapping("/staffs")
