@@ -122,18 +122,16 @@ public class UserService {
         });
     }
 
-    public void changePasswordBySuperior(String superiorLogin, String superiorClearTextPassword, String newPassword) {
-        Optional.of(superiorLogin).flatMap(userRepository::findOneByLogin).ifPresent(user -> {
-            SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneByLogin).ifPresent(admin -> {
-                String currentEncryptedPassword = admin.getPassword();
-                if (!passwordEncoder.matches(superiorClearTextPassword, currentEncryptedPassword)) {
-                    throw new ServiceException(ErrorCodeContants.BAD_PARAMETERS, "Old password not matched");
-                }
+    public void changePasswordBySuperior(User subordinate, String superiorClearTextPassword, String newPassword) {
+        SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneByLogin).ifPresent(admin -> {
+            String currentEncryptedPassword = admin.getPassword();
+            if (!passwordEncoder.matches(superiorClearTextPassword, currentEncryptedPassword)) {
+                throw new ServiceException(ErrorCodeContants.BAD_PARAMETERS, "Old password not matched");
+            }
 
-                String encryptedPassword = passwordEncoder.encode(newPassword);
-                user.setPassword(encryptedPassword);
-                log.debug("Changed password for User: {}", user);
-            });
+            String encryptedPassword = passwordEncoder.encode(newPassword);
+            subordinate.setPassword(encryptedPassword);
+            log.debug("Changed password for User: {}", subordinate.getLogin());
         });
     }
 
