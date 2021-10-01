@@ -86,7 +86,8 @@ public class UserResource {
         if (!ManagedUserVM.checkPasswordLength(passwordChangeDTO.getNewPassword())) {
             throw new ServiceException(ErrorCodeContants.INVALID_PASSWORD, "Password is short.");
         }
-        userService.changePasswordBySuperior(login, passwordChangeDTO.getCurrentPassword(),
+        User subordinate = userRepository.findOneByLogin(login).orElseThrow();
+        userService.changePasswordBySuperior(subordinate, passwordChangeDTO.getCurrentPassword(),
                 passwordChangeDTO.getNewPassword());
     }
 
