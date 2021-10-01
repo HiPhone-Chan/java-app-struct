@@ -20,12 +20,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.chf.app.constants.ErrorCodeContants;
 import com.chf.app.domain.Navigation;
-import com.chf.app.exception.ServiceException;
+import com.chf.app.domain.User;
 import com.chf.app.repository.NavigationApiRepository;
 import com.chf.app.repository.NavigationRepository;
 import com.chf.app.service.NavigationService;
+import com.chf.app.service.UserService;
 import com.chf.app.service.dto.NavigationTreeDTO;
 import com.chf.app.utils.RandomUtil;
 import com.chf.app.web.util.ResponseUtil;
@@ -44,6 +44,9 @@ public class NavigationResource {
     @Autowired
     private NavigationService navigationService;
 
+    @Autowired
+    private UserService userService;
+
     @PostMapping("/navigation")
     public void createNavigation(@RequestBody NavigationVM navigationVM) {
         Navigation navigation = new Navigation();
@@ -54,8 +57,7 @@ public class NavigationResource {
         navigation.setRegion(navigationVM.getRegion());
         String parentId = navigationVM.getParentId();
         if (StringUtils.isNotEmpty(parentId)) {
-            Navigation parent = navigationRepository.findById(parentId)
-                    .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+            Navigation parent = navigationRepository.findById(parentId).orElseThrow();
             navigation.setParent(parent);
         }
         navigationRepository.save(navigation);
@@ -70,8 +72,7 @@ public class NavigationResource {
             navigation.setRegion(navigationVM.getRegion());
             String parentId = navigationVM.getParentId();
             if (StringUtils.isNotEmpty(parentId)) {
-                Navigation parent = navigationRepository.findById(parentId)
-                        .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+                Navigation parent = navigationRepository.findById(parentId).orElseThrow();
                 navigation.setParent(parent);
             }
             navigationRepository.save(navigation);
@@ -105,7 +106,8 @@ public class NavigationResource {
 
     @GetMapping("/navigation/trees")
     public List<NavigationTreeDTO> getNavigationTrees() {
-        return navigationService.getAllTrees();
+        User user = userService.getUserWithAuthorities().orElseThrow();
+        return navigationService.getAllRoleNavTree(user);
     }
 
     @DeleteMapping("/navigation")

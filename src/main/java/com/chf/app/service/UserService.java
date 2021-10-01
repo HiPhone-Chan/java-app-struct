@@ -1,7 +1,5 @@
 package com.chf.app.service;
 
-import static com.chf.app.constants.AuthoritiesConstants.ADMIN;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -18,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,19 +122,16 @@ public class UserService {
         });
     }
 
-    @Secured(ADMIN)
-    public void changePassword(String login, String currentClearTextPassword, String newPassword) {
-        Optional.of(login).flatMap(userRepository::findOneByLogin).ifPresent(user -> {
-            SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneByLogin).ifPresent(admin -> {
-                String currentEncryptedPassword = admin.getPassword();
-                if (!passwordEncoder.matches(currentClearTextPassword, currentEncryptedPassword)) {
-                    throw new ServiceException(ErrorCodeContants.BAD_PARAMETERS, "Old password not matched");
-                }
+    public void changePasswordBySuperior(User subordinate, String superiorClearTextPassword, String newPassword) {
+        SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneByLogin).ifPresent(admin -> {
+            String currentEncryptedPassword = admin.getPassword();
+            if (!passwordEncoder.matches(superiorClearTextPassword, currentEncryptedPassword)) {
+                throw new ServiceException(ErrorCodeContants.BAD_PARAMETERS, "Old password not matched");
+            }
 
-                String encryptedPassword = passwordEncoder.encode(newPassword);
-                user.setPassword(encryptedPassword);
-                log.debug("Changed password for User: {}", user);
-            });
+            String encryptedPassword = passwordEncoder.encode(newPassword);
+            subordinate.setPassword(encryptedPassword);
+            log.debug("Changed password for User: {}", subordinate.getLogin());
         });
     }
 

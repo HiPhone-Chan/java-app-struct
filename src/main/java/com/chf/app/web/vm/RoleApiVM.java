@@ -6,7 +6,7 @@ public class RoleApiVM {
 
     private String roleId;
 
-    private List<String> apiId;
+    private List<String> apiIds;
 
     public String getRoleId() {
         return roleId;
@@ -16,12 +16,12 @@ public class RoleApiVM {
         this.roleId = roleId;
     }
 
-    public List<String> getApiId() {
-        return apiId;
+    public List<String> getApiIds() {
+        return apiIds;
     }
 
-    public void setApiId(List<String> apiId) {
-        this.apiId = apiId;
+    public void setApiIds(List<String> apiIds) {
+        this.apiIds = apiIds;
     }
 
 }

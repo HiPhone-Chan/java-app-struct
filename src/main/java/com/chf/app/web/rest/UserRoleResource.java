@@ -16,12 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.chf.app.constants.ErrorCodeContants;
 import com.chf.app.domain.StaffRole;
 import com.chf.app.domain.User;
 import com.chf.app.domain.UserRole;
 import com.chf.app.domain.id.UserRoleId;
-import com.chf.app.exception.ServiceException;
 import com.chf.app.repository.StaffRoleRepository;
 import com.chf.app.repository.UserRepository;
 import com.chf.app.repository.UserRoleRepository;
@@ -44,8 +42,7 @@ public class UserRoleResource {
 
     @PutMapping("/user-role")
     public void updateUserRole(@Valid @RequestBody UserRoleVM userRoleVM) {
-        User user = userRepository.findOneByLogin(userRoleVM.getLogin())
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+        User user = userRepository.findOneByLogin(userRoleVM.getLogin()).orElseThrow();
         userRoleRepository.deleteByIdUser(user);
 
         List<UserRole> list = new ArrayList<>();
@@ -61,8 +58,7 @@ public class UserRoleResource {
 
     @GetMapping("/user-roles")
     public ResponseEntity<List<StaffRole>> getUserRoles(Pageable pageable, String login) {
-        User user = userRepository.findOneByLogin(login)
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+        User user = userRepository.findOneByLogin(login).orElseThrow();
         Page<StaffRole> page = userRoleRepository.findByIdUser(pageable, user).map(userRole -> {
             return userRole.getId().getRole();
         });

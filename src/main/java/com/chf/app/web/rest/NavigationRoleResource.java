@@ -15,11 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.chf.app.constants.ErrorCodeContants;
 import com.chf.app.domain.NavigationRole;
 import com.chf.app.domain.StaffRole;
 import com.chf.app.domain.id.NavigationRoleId;
-import com.chf.app.exception.ServiceException;
 import com.chf.app.repository.NavigationRepository;
 import com.chf.app.repository.NavigationRoleRepository;
 import com.chf.app.repository.StaffRoleRepository;
@@ -47,7 +45,7 @@ public class NavigationRoleResource {
             navigationRoleRepository.deleteByIdRole(role);
 
             List<NavigationRole> list = new ArrayList<>();
-            for (String navId : navigationRoleVM.getNavigationId()) {
+            for (String navId : navigationRoleVM.getNavigationIds()) {
                 navigationRepository.findById(navId).ifPresent(navigation -> {
                     NavigationRole navigationRole = new NavigationRole();
                     navigationRole.setId(new NavigationRoleId(navigation, role));
@@ -60,8 +58,7 @@ public class NavigationRoleResource {
 
     @GetMapping("/navigation-role/navigations")
     public ResponseEntity<List<NavigationVM>> getRoleNavigations(Pageable pageable, @RequestParam String roleId) {
-        StaffRole role = staffRoleRepository.findById(roleId)
-                .orElseThrow(() -> new ServiceException(ErrorCodeContants.LACK_OF_DATA));
+        StaffRole role = staffRoleRepository.findById(roleId).orElseThrow();
 
         Page<NavigationVM> page = navigationRoleRepository.findByIdRole(pageable, role).map(navigationRole -> {
             return new NavigationVM(navigationRole.getId().getNavigation());

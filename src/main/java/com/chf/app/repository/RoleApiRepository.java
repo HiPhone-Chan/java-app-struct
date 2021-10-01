@@ -15,4 +15,6 @@ public interface RoleApiRepository extends JpaRepository<RoleApi, RoleApiId> {
 
     List<RoleApi> findAllByIdApiInfo(ApiInfo apiInfo);
 
+    void deleteByIdRole(StaffRole role);
+
 }
