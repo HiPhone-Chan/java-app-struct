@@ -285,18 +285,17 @@ public class User extends AbstractAuditingEntity {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof User)) {
             return false;
         }
-
-        User user = (User) o;
-
-        return login.equals(user.login);
+        return id != null && id.equals(((User) o).id);
     }
 
     @Override
     public int hashCode() {
-        return login.hashCode();
+        // see
+        // https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
     }
 
     @Override

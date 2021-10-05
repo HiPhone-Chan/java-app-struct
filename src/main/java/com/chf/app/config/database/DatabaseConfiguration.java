@@ -10,7 +10,7 @@ import com.chf.app.constants.SystemConstants;
 
 @Configuration
 @EnableJpaRepositories(basePackages = SystemConstants.BASE_PACKAGE + ".repository")
-@EntityScan({ SystemConstants.BASE_PACKAGE, "org.springframework.data.jpa.convert.threeten" })
+@EntityScan({ SystemConstants.BASE_PACKAGE })
 @EnableJpaAuditing(auditorAwareRef = "springSecurityAuditorAware")
 @EnableTransactionManagement
 public class DatabaseConfiguration {
