@@ -104,7 +104,7 @@ public class NavigationResource {
         return ResponseUtil.wrapPage(page);
     }
 
-    @GetMapping("/staff/navigation/trees")
+    @GetMapping("/navigation/trees")
     public List<NavigationTreeDTO> getNavigationTrees() {
         User user = userService.getUserWithAuthorities().orElseThrow();
         return navigationService.getAllRoleNavTree(user);
