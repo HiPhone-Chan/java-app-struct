@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.chf.app.constants.AuthoritiesConstants;
 import com.chf.app.constants.ErrorCodeContants;
+import com.chf.app.constants.SystemConstants;
 import com.chf.app.domain.Authority;
 import com.chf.app.domain.User;
 import com.chf.app.exception.ServiceException;
@@ -85,7 +86,7 @@ public class StaffResource {
         return ResponseUtil.wrapOrNotFound(Optional.empty());
     }
 
-    @PutMapping("/staff/change-password")
+    @PutMapping("/staff/change-password/{login:" + SystemConstants.LOGIN_REGEX + "}")
     public void changePassword(@PathVariable String login, @RequestBody PasswordChangeDTO passwordChangeDTO) {
         if (!ManagedUserVM.checkPasswordLength(passwordChangeDTO.getNewPassword())) {
             throw new ServiceException(ErrorCodeContants.INVALID_PASSWORD, "Password is short.");
