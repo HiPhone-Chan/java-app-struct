@@ -32,7 +32,7 @@ import com.chf.app.web.util.ResponseUtil;
 import com.chf.app.web.vm.NavigationVM;
 
 @RestController
-@RequestMapping("/api/manager")
+@RequestMapping("/api")
 public class NavigationResource {
 
     @Autowired
@@ -47,7 +47,7 @@ public class NavigationResource {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/navigation")
+    @PostMapping("/manager/navigation")
     public void createNavigation(@RequestBody NavigationVM navigationVM) {
         Navigation navigation = new Navigation();
         navigation.setId(RandomUtil.uuid());
@@ -63,7 +63,7 @@ public class NavigationResource {
         navigationRepository.save(navigation);
     }
 
-    @PutMapping("/navigation")
+    @PutMapping("/manager/navigation")
     public void updateNavigation(@RequestBody NavigationVM navigationVM) {
         navigationRepository.findById(navigationVM.getId()).ifPresent(navigation -> {
             navigation.setTitle(navigationVM.getTitle());
@@ -79,7 +79,7 @@ public class NavigationResource {
         });
     }
 
-    @GetMapping("/navigations")
+    @GetMapping("/manager/navigations")
     public ResponseEntity<List<NavigationVM>> getNavigations(Pageable pageable,
             @RequestParam(name = "parentId", required = false) String parentId) {
         Specification<Navigation> spec = (root, query, criteriaBuilder) -> {
@@ -104,13 +104,13 @@ public class NavigationResource {
         return ResponseUtil.wrapPage(page);
     }
 
-    @GetMapping("/navigation/trees")
+    @GetMapping("/staff/navigation/trees")
     public List<NavigationTreeDTO> getNavigationTrees() {
         User user = userService.getUserWithAuthorities().orElseThrow();
         return navigationService.getAllRoleNavTree(user);
     }
 
-    @DeleteMapping("/navigation")
+    @DeleteMapping("/manager/navigation")
     public void deleteNavigation(@RequestParam String id) {
         navigationRepository.deleteById(id);
     }

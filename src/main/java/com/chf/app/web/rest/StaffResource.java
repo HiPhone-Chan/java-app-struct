@@ -39,7 +39,6 @@ import com.chf.app.repository.UserRepository;
 import com.chf.app.service.UserService;
 import com.chf.app.service.dto.AdminUserDTO;
 import com.chf.app.service.dto.PasswordChangeDTO;
-import com.chf.app.service.dto.UserDTO;
 import com.chf.app.web.util.ResponseUtil;
 import com.chf.app.web.vm.ManagedUserVM;
 
@@ -71,7 +70,7 @@ public class StaffResource {
     }
 
     @PutMapping("/staff")
-    public ResponseEntity<UserDTO> updateStaff(@Valid @RequestBody AdminUserDTO userDTO) {
+    public ResponseEntity<AdminUserDTO> updateStaff(@Valid @RequestBody AdminUserDTO userDTO) {
         log.debug("REST request to update User : {}", userDTO);
         User existingUser = userRepository.findOneByLogin(userDTO.getLogin().toLowerCase()).orElseThrow();
 
@@ -80,7 +79,7 @@ public class StaffResource {
         if (authorities.contains(AuthoritiesConstants.STAFF)) {
             userDTO.setAuthorities(
                     existingUser.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet()));
-            Optional<UserDTO> updatedUser = userService.updateUser(userDTO);
+            Optional<AdminUserDTO> updatedUser = userService.updateUser(userDTO);
             return ResponseUtil.wrapOrNotFound(updatedUser);
         }
         return ResponseUtil.wrapOrNotFound(Optional.empty());
