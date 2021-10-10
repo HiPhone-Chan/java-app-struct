@@ -75,7 +75,7 @@ public class NavigationApiResource {
     }
 
     // 获取员工菜单中的api
-    @GetMapping("/staff/navigation-api/apis")
+    @GetMapping("/navigation-api/apis")
     public List<ApiInfo> getStaffNavigationApis(@RequestParam String navId) {
         User user = userService.getUserWithAuthorities().orElseThrow();
         List<StaffRole> userRoleList = userRoleRepository.findAllByIdUser(user).stream().map(UserRole::getId)
