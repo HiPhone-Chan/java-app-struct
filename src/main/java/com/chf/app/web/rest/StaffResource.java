@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.chf.app.constants.AuthoritiesConstants;
@@ -56,6 +58,7 @@ public class StaffResource {
     private UserService userService;
 
     @PostMapping("/staff")
+    @ResponseStatus(HttpStatus.CREATED)
     public User createStaff(@Valid @RequestBody AdminUserDTO userDTO) {
         log.debug("REST request to save User : {}", userDTO);
 
@@ -92,7 +95,7 @@ public class StaffResource {
             throw new ServiceException(ErrorCodeContants.INVALID_PASSWORD, "Password is short.");
         }
 
-        User user = Optional.of(login).flatMap(userRepository::findOneByLogin).orElseThrow();
+        User user = userService.getUserWithAuthoritiesByLogin(login).orElseThrow();
         if (user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet())
                 .contains(AuthoritiesConstants.STAFF)) {
             userService.changePasswordBySuperior(user, passwordChangeDTO.getCurrentPassword(),
@@ -117,6 +120,7 @@ public class StaffResource {
     }
 
     @DeleteMapping("/staff")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteStaff(@RequestParam String login) {
         log.debug("REST request to delete Staff: {}", login);
         User user = userService.getUserWithAuthoritiesByLogin(login).orElseThrow();

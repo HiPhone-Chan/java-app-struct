@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.chf.app.domain.Navigation;
@@ -48,6 +50,7 @@ public class NavigationResource {
     private UserService userService;
 
     @PostMapping("/manager/navigation")
+    @ResponseStatus(HttpStatus.CREATED)
     public void createNavigation(@RequestBody NavigationVM navigationVM) {
         Navigation navigation = new Navigation();
         navigation.setId(RandomUtil.uuid());
@@ -111,6 +114,7 @@ public class NavigationResource {
     }
 
     @DeleteMapping("/manager/navigation")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteNavigation(@RequestParam String id) {
         navigationRepository.deleteById(id);
     }
