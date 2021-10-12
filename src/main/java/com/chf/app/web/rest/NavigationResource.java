@@ -107,6 +107,7 @@ public class NavigationResource {
         return ResponseUtil.wrapPage(page);
     }
 
+    // 获取当前员工导航树
     @GetMapping("/navigation/trees")
     public List<NavigationTreeDTO> getNavigationTrees() {
         User user = userService.getUserWithAuthorities().orElseThrow();
