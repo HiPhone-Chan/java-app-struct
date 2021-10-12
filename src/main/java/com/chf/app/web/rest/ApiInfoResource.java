@@ -59,19 +59,20 @@ public class ApiInfoResource {
     @GetMapping("/api-infos")
     public ResponseEntity<List<ApiInfo>> getApiInfos(Pageable pageable,
             @RequestParam(name = "method", required = false) String method,
-            @RequestParam(name = "path", required = false) String path,
-            @RequestParam(name = "description", required = false) String description) {
+            @RequestParam(name = "search", required = false) String search) {
         Specification<ApiInfo> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> andList = new ArrayList<>();
 
             if (StringUtils.isNotEmpty(method)) {
                 andList.add(criteriaBuilder.equal(root.get("method"), method));
             }
-            if (StringUtils.isNotEmpty(path)) {
-                andList.add(criteriaBuilder.like(root.get("method"), "%" + path + "%"));
-            }
-            if (StringUtils.isNotEmpty(description)) {
-                andList.add(criteriaBuilder.like(root.get("method"), "%" + description + "%"));
+
+            if (StringUtils.isNotEmpty(search)) {
+                List<Predicate> orList = new ArrayList<>();
+                String like = "%" + search + "%";
+                orList.add(criteriaBuilder.like(root.get("path"), like));
+                orList.add(criteriaBuilder.like(root.get("description"), like));
+                andList.add(criteriaBuilder.or(orList.toArray(new Predicate[orList.size()])));
             }
 
             query.where(criteriaBuilder.and(andList.toArray(new Predicate[andList.size()])));

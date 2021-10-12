@@ -13,6 +13,7 @@ import javax.persistence.criteria.SetJoin;
 import javax.validation.Valid;
 
 import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,13 +105,23 @@ public class StaffResource {
     }
 
     @GetMapping("/staffs")
-    public ResponseEntity<List<AdminUserDTO>> getStaffs(Pageable pageable) {
+    public ResponseEntity<List<AdminUserDTO>> getStaffs(Pageable pageable,
+            @RequestParam(name = "search", required = false) String search) {
         Specification<User> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> andList = new ArrayList<>();
 
             SetJoin<User, Authority> setJoin = root.joinSet("authorities", JoinType.LEFT);
             List<String> authorities = Arrays.asList(AuthoritiesConstants.STAFF);
             andList.add(setJoin.get("name").in(authorities));
+
+            if (StringUtils.isNotEmpty(search)) {
+                List<Predicate> orList = new ArrayList<>();
+                String like = "%" + search + "%";
+                orList.add(criteriaBuilder.like(root.get("login"), like));
+                orList.add(criteriaBuilder.like(root.get("mobile"), like));
+                orList.add(criteriaBuilder.like(root.get("nickName"), like));
+                andList.add(criteriaBuilder.or(orList.toArray(new Predicate[orList.size()])));
+            }
 
             query.where(criteriaBuilder.and(andList.toArray(new Predicate[andList.size()])));
             return query.getRestriction();

@@ -57,6 +57,7 @@ public class NavigationResource {
         navigation.setTitle(navigationVM.getTitle());
         navigation.setIcon(navigationVM.getIcon());
         navigation.setPath(navigationVM.getPath());
+        navigation.setPriority(navigationVM.getPriority());
         navigation.setRegion(navigationVM.getRegion());
         String parentId = navigationVM.getParentId();
         if (StringUtils.isNotEmpty(parentId)) {
@@ -73,6 +74,7 @@ public class NavigationResource {
             navigation.setIcon(navigationVM.getIcon());
             navigation.setPath(navigationVM.getPath());
             navigation.setRegion(navigationVM.getRegion());
+            navigation.setPriority(navigationVM.getPriority());
             String parentId = navigationVM.getParentId();
             if (StringUtils.isNotEmpty(parentId)) {
                 Navigation parent = navigationRepository.findById(parentId).orElseThrow();
