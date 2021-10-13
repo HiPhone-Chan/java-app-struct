@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.chf.app.domain.Organization;
 import com.chf.app.domain.OrganizationUser;
-import com.chf.app.domain.User;
 import com.chf.app.domain.id.OrganizationUserId;
 import com.chf.app.repository.OrganizationRepository;
 import com.chf.app.repository.OrganizationUserRepository;
@@ -57,11 +56,12 @@ public class OrganizationUserResource {
     }
 
     @GetMapping("/organization-users")
-    public ResponseEntity<List<AdminUserDTO>> getOrganizationUsers(Pageable pageable, String login) {
-        User user = userRepository.findOneByLogin(login).orElseThrow();
-        Page<AdminUserDTO> page = organizationUserRepository.findByIdUser(pageable, user).map(orgUser -> {
-            return new AdminUserDTO(orgUser.getId().getUser());
-        });
+    public ResponseEntity<List<AdminUserDTO>> getOrganizationUsers(Pageable pageable, String organizationId) {
+        Organization organization = organizationRepository.findById(organizationId).orElseThrow();
+        Page<AdminUserDTO> page = organizationUserRepository.findByIdOrganization(pageable, organization)
+                .map(orgUser -> {
+                    return new AdminUserDTO(orgUser.getId().getUser());
+                });
         return ResponseUtil.wrapPage(page);
     }
 }
