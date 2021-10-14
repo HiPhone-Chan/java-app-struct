@@ -6,6 +6,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.chf.app.domain.Organization;
@@ -44,6 +46,7 @@ public class OrganizationUserResource {
     private OrganizationService organizationService;
 
     @PostMapping("/organization-user")
+    @ResponseStatus(HttpStatus.CREATED)
     public void createOrganizationUser(@Valid @RequestBody OrganizationUserVM organizationUserVM) {
         Organization org = organizationRepository.findById(organizationUserVM.getOrganizationId()).orElseThrow();
 
@@ -55,7 +58,9 @@ public class OrganizationUserResource {
     }
 
     @DeleteMapping("/organization-user")
-    public void deleteOrganizationUser(@RequestParam String organizationId, @RequestParam String login) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteOrganizationUser(@RequestParam(name = "organizationId") String organizationId,
+            @RequestParam(name = "login") String login) {
         Organization org = organizationRepository.findById(organizationId).orElseThrow();
         User user = userRepository.findOneByLogin(login).orElseThrow();
 
@@ -63,7 +68,8 @@ public class OrganizationUserResource {
     }
 
     @GetMapping("/organization-users")
-    public ResponseEntity<List<AdminUserDTO>> getOrganizationUsers(Pageable pageable, String organizationId) {
+    public ResponseEntity<List<AdminUserDTO>> getOrganizationUsers(Pageable pageable,
+            @RequestParam(name = "organizationId") String organizationId) {
         Organization organization = organizationRepository.findById(organizationId).orElseThrow();
         return ResponseUtil.wrapPage(organizationService.getOrganizationUsers(pageable, organization));
     }
