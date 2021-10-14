@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -11,7 +12,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -42,14 +43,22 @@ public class UserService {
 
     private final Logger log = LoggerFactory.getLogger(UserService.class);
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private AuthorityRepository authorityRepository;
+    private final AuthorityRepository authorityRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+
+    private final CacheManager cacheManager;
+
+    public UserService(UserRepository userRepository, AuthorityRepository authorityRepository,
+            PasswordEncoder passwordEncoder, CacheManager cacheManager) {
+        super();
+        this.userRepository = userRepository;
+        this.authorityRepository = authorityRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.cacheManager = cacheManager;
+    }
 
     public User createUser(AdminUserDTO userDTO) {
         User user = new User();
@@ -77,13 +86,15 @@ public class UserService {
             user.setAuthorities(authorities);
         }
         userRepository.save(user);
+        this.clearUserCaches(user);
         log.debug("Created Information for User: {}", user);
         return user;
     }
 
-    public Optional<UserDTO> updateUser(AdminUserDTO userDTO) {
+    public Optional<AdminUserDTO> updateUser(AdminUserDTO userDTO) {
         return Optional.of(userRepository.findById(userDTO.getId())).filter(Optional::isPresent).map(Optional::get)
                 .map(user -> {
+                    this.clearUserCaches(user);
                     user.setLogin(userDTO.getLogin().toLowerCase());
                     user.setNickName(userDTO.getNickName());
                     user.setFirstName(userDTO.getFirstName());
@@ -97,9 +108,10 @@ public class UserService {
                     managedAuthorities.clear();
                     userDTO.getAuthorities().stream().map(authorityRepository::findById).filter(Optional::isPresent)
                             .map(Optional::get).forEach(managedAuthorities::add);
+                    this.clearUserCaches(user);
                     log.debug("Changed Information for User: {}", user);
                     return user;
-                }).map(UserDTO::new);
+                }).map(AdminUserDTO::new);
     }
 
     public void updateUser(String nickName, String mobile, String imageUrl) {
@@ -107,6 +119,8 @@ public class UserService {
             user.setNickName(nickName);
             user.setMobile(mobile);
             user.setImageUrl(imageUrl);
+
+            this.clearUserCaches(user);
             log.debug("Changed Information for User: {}", user);
         });
     }
@@ -118,19 +132,22 @@ public class UserService {
                 return;
             }
             userRepository.delete(user);
+            this.clearUserCaches(user);
             log.debug("Deleted User: {}", user);
         });
     }
 
     public void changePasswordBySuperior(User subordinate, String superiorClearTextPassword, String newPassword) {
-        SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneByLogin).ifPresent(admin -> {
-            String currentEncryptedPassword = admin.getPassword();
+        SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneByLogin).ifPresent(superior -> {
+            String currentEncryptedPassword = superior.getPassword();
             if (!passwordEncoder.matches(superiorClearTextPassword, currentEncryptedPassword)) {
                 throw new ServiceException(ErrorCodeContants.BAD_PARAMETERS, "Old password not matched");
             }
 
             String encryptedPassword = passwordEncoder.encode(newPassword);
             subordinate.setPassword(encryptedPassword);
+            userRepository.save(subordinate);
+            this.clearUserCaches(subordinate);
             log.debug("Changed password for User: {}", subordinate.getLogin());
         });
     }
@@ -143,6 +160,8 @@ public class UserService {
             }
             String encryptedPassword = passwordEncoder.encode(newPassword);
             user.setPassword(encryptedPassword);
+
+            this.clearUserCaches(user);
             log.debug("Changed password for User: {}", user);
         });
     }
@@ -186,6 +205,11 @@ public class UserService {
                 .forEach(user -> {
                     log.debug("Deleting not activated user {}", user.getLogin());
                     userRepository.delete(user);
+                    this.clearUserCaches(user);
                 });
+    }
+
+    private void clearUserCaches(User user) {
+        Objects.requireNonNull(cacheManager.getCache(UserRepository.USER_BY_LOGIN_CACHE)).evict(user.getLogin());
     }
 }

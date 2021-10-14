@@ -51,7 +51,7 @@ public class NavigationService {
 
         List<Navigation> children = navigationRepository.findAllByParent(node);
         List<NavigationTreeDTO> list = new ArrayList<>();
-        if (!CollectionUtils.isNotEmpty(children)) {
+        if (CollectionUtils.isNotEmpty(children)) {
             for (Navigation child : children) {
                 list.add(getNavTree(child));
             }

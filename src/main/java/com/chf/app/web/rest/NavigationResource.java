@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.chf.app.domain.Navigation;
@@ -32,7 +34,7 @@ import com.chf.app.web.util.ResponseUtil;
 import com.chf.app.web.vm.NavigationVM;
 
 @RestController
-@RequestMapping("/api/manager")
+@RequestMapping("/api")
 public class NavigationResource {
 
     @Autowired
@@ -47,13 +49,15 @@ public class NavigationResource {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/navigation")
+    @PostMapping("/manager/navigation")
+    @ResponseStatus(HttpStatus.CREATED)
     public void createNavigation(@RequestBody NavigationVM navigationVM) {
         Navigation navigation = new Navigation();
         navigation.setId(RandomUtil.uuid());
         navigation.setTitle(navigationVM.getTitle());
         navigation.setIcon(navigationVM.getIcon());
         navigation.setPath(navigationVM.getPath());
+        navigation.setPriority(navigationVM.getPriority());
         navigation.setRegion(navigationVM.getRegion());
         String parentId = navigationVM.getParentId();
         if (StringUtils.isNotEmpty(parentId)) {
@@ -63,13 +67,14 @@ public class NavigationResource {
         navigationRepository.save(navigation);
     }
 
-    @PutMapping("/navigation")
+    @PutMapping("/manager/navigation")
     public void updateNavigation(@RequestBody NavigationVM navigationVM) {
         navigationRepository.findById(navigationVM.getId()).ifPresent(navigation -> {
             navigation.setTitle(navigationVM.getTitle());
             navigation.setIcon(navigationVM.getIcon());
             navigation.setPath(navigationVM.getPath());
             navigation.setRegion(navigationVM.getRegion());
+            navigation.setPriority(navigationVM.getPriority());
             String parentId = navigationVM.getParentId();
             if (StringUtils.isNotEmpty(parentId)) {
                 Navigation parent = navigationRepository.findById(parentId).orElseThrow();
@@ -79,7 +84,7 @@ public class NavigationResource {
         });
     }
 
-    @GetMapping("/navigations")
+    @GetMapping("/manager/navigations")
     public ResponseEntity<List<NavigationVM>> getNavigations(Pageable pageable,
             @RequestParam(name = "parentId", required = false) String parentId) {
         Specification<Navigation> spec = (root, query, criteriaBuilder) -> {
@@ -104,13 +109,15 @@ public class NavigationResource {
         return ResponseUtil.wrapPage(page);
     }
 
+    // 获取当前员工导航树
     @GetMapping("/navigation/trees")
     public List<NavigationTreeDTO> getNavigationTrees() {
         User user = userService.getUserWithAuthorities().orElseThrow();
         return navigationService.getAllRoleNavTree(user);
     }
 
-    @DeleteMapping("/navigation")
+    @DeleteMapping("/manager/navigation")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteNavigation(@RequestParam String id) {
         navigationRepository.deleteById(id);
     }

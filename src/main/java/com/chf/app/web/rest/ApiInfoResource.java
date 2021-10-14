@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.chf.app.domain.ApiInfo;
@@ -34,6 +36,7 @@ public class ApiInfoResource {
     private ApiInfoRepository apiInfoRepository;
 
     @PostMapping("/api-info")
+    @ResponseStatus(HttpStatus.CREATED)
     public void createApiInfo(@Valid @RequestBody ApiInfo apiInfoVM) {
         ApiInfo apiInfo = new ApiInfo();
         apiInfo.setId(RandomUtil.uuid());
@@ -56,19 +59,20 @@ public class ApiInfoResource {
     @GetMapping("/api-infos")
     public ResponseEntity<List<ApiInfo>> getApiInfos(Pageable pageable,
             @RequestParam(name = "method", required = false) String method,
-            @RequestParam(name = "path", required = false) String path,
-            @RequestParam(name = "description", required = false) String description) {
+            @RequestParam(name = "search", required = false) String search) {
         Specification<ApiInfo> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> andList = new ArrayList<>();
 
             if (StringUtils.isNotEmpty(method)) {
                 andList.add(criteriaBuilder.equal(root.get("method"), method));
             }
-            if (StringUtils.isNotEmpty(path)) {
-                andList.add(criteriaBuilder.like(root.get("method"), "%" + path + "%"));
-            }
-            if (StringUtils.isNotEmpty(description)) {
-                andList.add(criteriaBuilder.like(root.get("method"), "%" + description + "%"));
+
+            if (StringUtils.isNotEmpty(search)) {
+                List<Predicate> orList = new ArrayList<>();
+                String like = "%" + search + "%";
+                orList.add(criteriaBuilder.like(root.get("path"), like));
+                orList.add(criteriaBuilder.like(root.get("description"), like));
+                andList.add(criteriaBuilder.or(orList.toArray(new Predicate[orList.size()])));
             }
 
             query.where(criteriaBuilder.and(andList.toArray(new Predicate[andList.size()])));
@@ -79,6 +83,7 @@ public class ApiInfoResource {
     }
 
     @DeleteMapping("/api-info")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteApiInfo(@RequestParam String id) {
         apiInfoRepository.deleteById(id);
     }

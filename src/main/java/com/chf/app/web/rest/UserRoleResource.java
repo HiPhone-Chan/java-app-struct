@@ -41,9 +41,8 @@ public class UserRoleResource {
     private UserRepository userRepository;
 
     @PutMapping("/user-role")
-    public void updateUserRole(@Valid @RequestBody UserRoleVM userRoleVM) {
+    public void saveUserRole(@Valid @RequestBody UserRoleVM userRoleVM) {
         User user = userRepository.findOneByLogin(userRoleVM.getLogin()).orElseThrow();
-        userRoleRepository.deleteByIdUser(user);
 
         List<UserRole> list = new ArrayList<>();
         for (String roleId : userRoleVM.getRoleIds()) {
@@ -53,6 +52,7 @@ public class UserRoleResource {
                 list.add(userRole);
             });
         }
+        userRoleRepository.deleteByIdUser(user);
         userRoleRepository.saveAll(list);
     }
 

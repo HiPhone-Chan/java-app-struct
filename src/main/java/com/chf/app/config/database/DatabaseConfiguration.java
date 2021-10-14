@@ -12,7 +12,7 @@ import com.chf.app.repository.support.JpaExtRepositoryFactoryBean;
 @Configuration
 @EnableJpaRepositories(basePackages = SystemConstants.BASE_PACKAGE
         + ".repository", repositoryFactoryBeanClass = JpaExtRepositoryFactoryBean.class)
-@EntityScan({ SystemConstants.BASE_PACKAGE, "org.springframework.data.jpa.convert.threeten" })
+@EntityScan({ SystemConstants.BASE_PACKAGE })
 @EnableJpaAuditing(auditorAwareRef = "springSecurityAuditorAware")
 @EnableTransactionManagement
 public class DatabaseConfiguration {

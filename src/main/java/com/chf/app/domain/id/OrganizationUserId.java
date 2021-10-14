@@ -15,17 +15,25 @@ public class OrganizationUserId implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ManyToOne
-    private Organization Organization;
+    private Organization organization;
 
     @ManyToOne
     private User user;
 
+    public OrganizationUserId() {
+    }
+
+    public OrganizationUserId(Organization organization, User user) {
+        this.organization = organization;
+        this.user = user;
+    }
+
     public Organization getOrganization() {
-        return Organization;
+        return organization;
     }
 
     public void setOrganization(Organization organization) {
-        Organization = organization;
+        this.organization = organization;
     }
 
     public User getUser() {
@@ -40,7 +48,7 @@ public class OrganizationUserId implements Serializable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((Organization == null) ? 0 : Organization.hashCode());
+        result = prime * result + ((organization == null) ? 0 : organization.hashCode());
         result = prime * result + ((user == null) ? 0 : user.hashCode());
         return result;
     }
@@ -54,10 +62,10 @@ public class OrganizationUserId implements Serializable {
         if (getClass() != obj.getClass())
             return false;
         OrganizationUserId other = (OrganizationUserId) obj;
-        if (Organization == null) {
-            if (other.Organization != null)
+        if (organization == null) {
+            if (other.organization != null)
                 return false;
-        } else if (!Organization.equals(other.Organization))
+        } else if (!organization.equals(other.organization))
             return false;
         if (user == null) {
             if (other.user != null)

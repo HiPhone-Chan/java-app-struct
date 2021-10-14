@@ -13,12 +13,14 @@ import javax.persistence.criteria.SetJoin;
 import javax.validation.Valid;
 
 import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,10 +30,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.chf.app.constants.AuthoritiesConstants;
 import com.chf.app.constants.ErrorCodeContants;
+import com.chf.app.constants.SystemConstants;
 import com.chf.app.domain.Authority;
 import com.chf.app.domain.User;
 import com.chf.app.exception.ServiceException;
@@ -39,7 +43,6 @@ import com.chf.app.repository.UserRepository;
 import com.chf.app.service.UserService;
 import com.chf.app.service.dto.AdminUserDTO;
 import com.chf.app.service.dto.PasswordChangeDTO;
-import com.chf.app.service.dto.UserDTO;
 import com.chf.app.web.util.ResponseUtil;
 import com.chf.app.web.vm.ManagedUserVM;
 
@@ -56,6 +59,7 @@ public class StaffResource {
     private UserService userService;
 
     @PostMapping("/staff")
+    @ResponseStatus(HttpStatus.CREATED)
     public User createStaff(@Valid @RequestBody AdminUserDTO userDTO) {
         log.debug("REST request to save User : {}", userDTO);
 
@@ -71,7 +75,7 @@ public class StaffResource {
     }
 
     @PutMapping("/staff")
-    public ResponseEntity<UserDTO> updateStaff(@Valid @RequestBody AdminUserDTO userDTO) {
+    public ResponseEntity<AdminUserDTO> updateStaff(@Valid @RequestBody AdminUserDTO userDTO) {
         log.debug("REST request to update User : {}", userDTO);
         User existingUser = userRepository.findOneByLogin(userDTO.getLogin().toLowerCase()).orElseThrow();
 
@@ -80,19 +84,19 @@ public class StaffResource {
         if (authorities.contains(AuthoritiesConstants.STAFF)) {
             userDTO.setAuthorities(
                     existingUser.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet()));
-            Optional<UserDTO> updatedUser = userService.updateUser(userDTO);
+            Optional<AdminUserDTO> updatedUser = userService.updateUser(userDTO);
             return ResponseUtil.wrapOrNotFound(updatedUser);
         }
         return ResponseUtil.wrapOrNotFound(Optional.empty());
     }
 
-    @PutMapping("/staff/change-password")
+    @PutMapping("/staff/change-password/{login:" + SystemConstants.LOGIN_REGEX + "}")
     public void changePassword(@PathVariable String login, @RequestBody PasswordChangeDTO passwordChangeDTO) {
         if (!ManagedUserVM.checkPasswordLength(passwordChangeDTO.getNewPassword())) {
             throw new ServiceException(ErrorCodeContants.INVALID_PASSWORD, "Password is short.");
         }
 
-        User user = Optional.of(login).flatMap(userRepository::findOneByLogin).orElseThrow();
+        User user = userService.getUserWithAuthoritiesByLogin(login).orElseThrow();
         if (user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet())
                 .contains(AuthoritiesConstants.STAFF)) {
             userService.changePasswordBySuperior(user, passwordChangeDTO.getCurrentPassword(),
@@ -101,13 +105,23 @@ public class StaffResource {
     }
 
     @GetMapping("/staffs")
-    public ResponseEntity<List<AdminUserDTO>> getStaffs(Pageable pageable) {
+    public ResponseEntity<List<AdminUserDTO>> getStaffs(Pageable pageable,
+            @RequestParam(name = "search", required = false) String search) {
         Specification<User> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> andList = new ArrayList<>();
 
             SetJoin<User, Authority> setJoin = root.joinSet("authorities", JoinType.LEFT);
             List<String> authorities = Arrays.asList(AuthoritiesConstants.STAFF);
             andList.add(setJoin.get("name").in(authorities));
+
+            if (StringUtils.isNotEmpty(search)) {
+                List<Predicate> orList = new ArrayList<>();
+                String like = "%" + search + "%";
+                orList.add(criteriaBuilder.like(root.get("login"), like));
+                orList.add(criteriaBuilder.like(root.get("mobile"), like));
+                orList.add(criteriaBuilder.like(root.get("nickName"), like));
+                andList.add(criteriaBuilder.or(orList.toArray(new Predicate[orList.size()])));
+            }
 
             query.where(criteriaBuilder.and(andList.toArray(new Predicate[andList.size()])));
             return query.getRestriction();
@@ -117,6 +131,7 @@ public class StaffResource {
     }
 
     @DeleteMapping("/staff")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteStaff(@RequestParam String login) {
         log.debug("REST request to delete Staff: {}", login);
         User user = userService.getUserWithAuthoritiesByLogin(login).orElseThrow();

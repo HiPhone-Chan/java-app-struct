@@ -18,6 +18,8 @@ public class NavigationVM {
 
     private String parentId;
 
+    private Integer priority;
+
     private boolean hasChildren;
 
     private boolean hasApis;
@@ -30,6 +32,7 @@ public class NavigationVM {
         this.title = navigation.getTitle();
         this.path = navigation.getPath();
         this.icon = navigation.getIcon();
+        this.priority = navigation.getPriority();
         this.region = navigation.getRegion();
         this.parentId = Optional.ofNullable(navigation.getParent()).map(Navigation::getId).orElse(null);
     }
@@ -80,6 +83,14 @@ public class NavigationVM {
 
     public void setParentId(String parentId) {
         this.parentId = parentId;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
     }
 
     public boolean isHasChildren() {
