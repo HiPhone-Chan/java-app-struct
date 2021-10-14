@@ -10,8 +10,6 @@ import com.chf.app.domain.id.OrganizationUserId;
 
 public interface OrganizationUserRepository extends JpaRepository<OrganizationUser, OrganizationUserId> {
 
-    void deleteByIdOrganization(Organization organization);
-
     Page<OrganizationUser> findByIdOrganization(Pageable pageable, Organization organization);
 
 }

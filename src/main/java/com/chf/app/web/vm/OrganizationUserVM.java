@@ -1,7 +1,5 @@
 package com.chf.app.web.vm;
 
-import java.util.List;
-
 import javax.validation.constraints.NotNull;
 
 public class OrganizationUserVM {
@@ -9,7 +7,7 @@ public class OrganizationUserVM {
     @NotNull
     private String organizationId;
 
-    private List<String> logins;
+    private String login;
 
     public String getOrganizationId() {
         return organizationId;
@@ -19,12 +17,12 @@ public class OrganizationUserVM {
         this.organizationId = organizationId;
     }
 
-    public List<String> getLogins() {
-        return logins;
+    public String getLogin() {
+        return login;
     }
 
-    public void setLogins(List<String> logins) {
-        this.logins = logins;
+    public void setLogin(String login) {
+        this.login = login;
     }
 
 }
