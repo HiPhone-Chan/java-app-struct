@@ -12,6 +12,8 @@ public class OrganizationVM {
 
     private String parentId;
 
+    private boolean hasChildren;
+
     public OrganizationVM() {
     }
 
@@ -43,6 +45,14 @@ public class OrganizationVM {
 
     public void setParentId(String parentId) {
         this.parentId = parentId;
+    }
+
+    public boolean isHasChildren() {
+        return hasChildren;
+    }
+
+    public void setHasChildren(boolean hasChildren) {
+        this.hasChildren = hasChildren;
     }
 
 }

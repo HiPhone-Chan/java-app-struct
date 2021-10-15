@@ -9,4 +9,6 @@ import com.chf.app.domain.Organization;
 public interface OrganizationRepository extends JpaRepository<Organization, String> {
 
     Page<Organization> findByParent(Pageable pageable, Organization parent);
+
+    boolean existsByParent(Organization parent);
 }

@@ -65,7 +65,11 @@ public class OrganizationResource {
     public ResponseEntity<List<OrganizationVM>> getOrganizations(Pageable pageable,
             @RequestParam(name = "parentId", required = false) String parentId) {
         Organization parent = Optional.ofNullable(parentId).flatMap(organizationRepository::findById).orElse(null);
-        Page<OrganizationVM> page = organizationRepository.findByParent(pageable, parent).map(OrganizationVM::new);
+        Page<OrganizationVM> page = organizationRepository.findByParent(pageable, parent).map(organization -> {
+            OrganizationVM organizationVM = new OrganizationVM(organization);
+            organizationVM.setHasChildren(organizationRepository.existsByParent(organization));
+            return organizationVM;
+        });
         return ResponseUtil.wrapPage(page);
     }
 
