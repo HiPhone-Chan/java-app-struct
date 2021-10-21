@@ -11,6 +11,7 @@ import org.camunda.bpm.engine.FormService;
 import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.form.FormField;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.history.HistoricProcessInstanceQuery;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
@@ -113,9 +114,9 @@ public class BpmTaskResource {
 
     @GetMapping("/task/form/variables")
     @Secured(STAFF)
-    public Map<String, Object> getTaskFormVariables(@RequestParam String taskId) {
+    public List<FormField> getTaskFormVariables(@RequestParam String taskId) {
         bpmCommonService.getCurrentTask(taskId);
-        return formService.getTaskFormVariables(taskId);
+        return formService.getTaskFormData(taskId).getFormFields();
     }
 
     @PostMapping("/task/complete")

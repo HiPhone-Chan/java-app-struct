@@ -48,7 +48,7 @@ public class BpmGroup implements Group {
     }
 
     @Override
-    public void setType(String string) {
+    public void setType(String type) {
         this.type = type;
     }
 
