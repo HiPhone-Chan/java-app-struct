@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.chf.app.constants.AuthoritiesConstants;
 import com.chf.app.domain.Organization;
 import com.chf.app.repository.OrganizationRepository;
 import com.chf.app.utils.RandomUtil;
@@ -26,13 +28,13 @@ import com.chf.app.web.util.ResponseUtil;
 import com.chf.app.web.vm.OrganizationVM;
 
 @RestController
-@RequestMapping("/api/manager")
+@RequestMapping("/api")
 public class OrganizationResource {
 
     @Autowired
     private OrganizationRepository organizationRepository;
 
-    @PostMapping("/organization")
+    @PostMapping("/manager/organization")
     @ResponseStatus(HttpStatus.CREATED)
     public void createOrganization(@RequestBody OrganizationVM organizationVM) {
         Organization organization = new Organization();
@@ -47,7 +49,7 @@ public class OrganizationResource {
         organizationRepository.save(organization);
     }
 
-    @PutMapping("/organization")
+    @PutMapping("/manager/organization")
     public void updateOrganization(@RequestBody OrganizationVM organizationVM) {
         organizationRepository.findById(organizationVM.getId()).ifPresent(organization -> {
             organization.setName(organizationVM.getName());
@@ -62,6 +64,7 @@ public class OrganizationResource {
     }
 
     @GetMapping("/organizations")
+    @Secured({ AuthoritiesConstants.MANAGER, AuthoritiesConstants.STAFF })
     public ResponseEntity<List<OrganizationVM>> getOrganizations(Pageable pageable,
             @RequestParam(name = "parentId", required = false) String parentId) {
         Organization parent = Optional.ofNullable(parentId).flatMap(organizationRepository::findById).orElse(null);
@@ -73,7 +76,7 @@ public class OrganizationResource {
         return ResponseUtil.wrapPage(page);
     }
 
-    @DeleteMapping("/organization")
+    @DeleteMapping("/manager/organization")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteOrganization(@RequestParam String id) {
         organizationRepository.deleteById(id);
