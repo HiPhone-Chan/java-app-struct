@@ -14,6 +14,9 @@ public class Organization {
     @Id
     private String id;
 
+    @Column(name = "code", length = 15, unique = true)
+    private String code;
+
     @Column(name = "name", length = 31)
     private String name;
 
@@ -26,6 +29,14 @@ public class Organization {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getName() {

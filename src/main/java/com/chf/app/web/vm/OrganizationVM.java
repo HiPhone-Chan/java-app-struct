@@ -8,6 +8,8 @@ public class OrganizationVM {
 
     private String id;
 
+    private String code;
+
     private String name;
 
     private String parentId;
@@ -19,6 +21,7 @@ public class OrganizationVM {
 
     public OrganizationVM(Organization organization) {
         this.id = organization.getId();
+        this.code = organization.getCode();
         this.name = organization.getName();
         this.parentId = Optional.ofNullable(organization.getParent()).map(Organization::getId).orElse(null);
     }
@@ -29,6 +32,14 @@ public class OrganizationVM {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getName() {

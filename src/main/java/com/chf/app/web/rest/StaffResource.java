@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
 
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.persistence.criteria.SetJoin;
 import javax.validation.Valid;
 
-import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +37,13 @@ import com.chf.app.constants.AuthoritiesConstants;
 import com.chf.app.constants.ErrorCodeContants;
 import com.chf.app.constants.SystemConstants;
 import com.chf.app.domain.Authority;
+import com.chf.app.domain.Staff;
 import com.chf.app.domain.User;
 import com.chf.app.exception.ServiceException;
 import com.chf.app.repository.UserRepository;
+import com.chf.app.service.StaffService;
 import com.chf.app.service.UserService;
+import com.chf.app.service.dto.AdminStaffDTO;
 import com.chf.app.service.dto.AdminUserDTO;
 import com.chf.app.service.dto.PasswordChangeDTO;
 import com.chf.app.web.util.ResponseUtil;
@@ -56,11 +59,14 @@ public class StaffResource {
     private UserRepository userRepository;
 
     @Autowired
+    private StaffService staffService;
+
+    @Autowired
     private UserService userService;
 
     @PostMapping("/staff")
     @ResponseStatus(HttpStatus.CREATED)
-    public User createStaff(@Valid @RequestBody AdminUserDTO userDTO) {
+    public Staff createStaff(@Valid @RequestBody AdminStaffDTO userDTO) {
         log.debug("REST request to save User : {}", userDTO);
 
         if (userDTO.getId() != null) {
@@ -69,15 +75,15 @@ public class StaffResource {
             throw new ServiceException(ErrorCodeContants.LOGIN_ALREADY_USED);
         }
 
-        userDTO.setAuthorities(SetUtils.hashSet(AuthoritiesConstants.STAFF));
-        User newUser = userService.createUser(userDTO);
+        Staff newUser = staffService.createStaff(userDTO);
         return newUser;
     }
 
     @PutMapping("/staff")
-    public ResponseEntity<AdminUserDTO> updateStaff(@Valid @RequestBody AdminUserDTO userDTO) {
+    public ResponseEntity<AdminUserDTO> updateStaff(@Valid @RequestBody AdminStaffDTO userDTO) {
         log.debug("REST request to update User : {}", userDTO);
-        User existingUser = userRepository.findOneByLogin(userDTO.getLogin().toLowerCase()).orElseThrow();
+        User existingUser = userRepository.findOneWithAuthoritiesByLogin(userDTO.getLogin().toLowerCase())
+                .orElseThrow();
 
         Set<String> authorities = existingUser.getAuthorities().stream().map(Authority::getName)
                 .collect(Collectors.toSet());
@@ -105,28 +111,31 @@ public class StaffResource {
     }
 
     @GetMapping("/staffs")
-    public ResponseEntity<List<AdminUserDTO>> getStaffs(Pageable pageable,
+    public ResponseEntity<List<AdminStaffDTO>> getStaffs(Pageable pageable,
             @RequestParam(name = "search", required = false) String search) {
-        Specification<User> spec = (root, query, criteriaBuilder) -> {
+        Specification<Staff> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> andList = new ArrayList<>();
 
-            SetJoin<User, Authority> setJoin = root.joinSet("authorities", JoinType.LEFT);
+            Root<User> userRoot = query.from(User.class);
+            andList.add(criteriaBuilder.equal(root.get("id").get("user"), userRoot));
+
+            SetJoin<User, Authority> setJoin = userRoot.joinSet("authorities", JoinType.LEFT);
             List<String> authorities = Arrays.asList(AuthoritiesConstants.STAFF);
             andList.add(setJoin.get("name").in(authorities));
 
             if (StringUtils.isNotEmpty(search)) {
                 List<Predicate> orList = new ArrayList<>();
                 String like = "%" + search + "%";
-                orList.add(criteriaBuilder.like(root.get("login"), like));
-                orList.add(criteriaBuilder.like(root.get("mobile"), like));
-                orList.add(criteriaBuilder.like(root.get("nickName"), like));
+                orList.add(criteriaBuilder.like(userRoot.get("login"), like));
+                orList.add(criteriaBuilder.like(userRoot.get("mobile"), like));
+                orList.add(criteriaBuilder.like(userRoot.get("nickName"), like));
                 andList.add(criteriaBuilder.or(orList.toArray(new Predicate[orList.size()])));
             }
 
             query.where(criteriaBuilder.and(andList.toArray(new Predicate[andList.size()])));
             return query.getRestriction();
         };
-        final Page<AdminUserDTO> page = userService.getAllManagedUsers(spec, pageable);
+        final Page<AdminStaffDTO> page = staffService.getStaffs(spec, pageable);
         return ResponseUtil.wrapPage(page);
     }
 
@@ -137,7 +146,7 @@ public class StaffResource {
         User user = userService.getUserWithAuthoritiesByLogin(login).orElseThrow();
         Set<String> authorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet());
         if (authorities.contains(AuthoritiesConstants.STAFF) && !authorities.contains(AuthoritiesConstants.ADMIN)) {
-            userService.deleteUser(login);
+            staffService.deleteStaff(login);
         }
     }
 

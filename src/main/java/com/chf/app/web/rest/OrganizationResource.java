@@ -39,6 +39,11 @@ public class OrganizationResource {
     public void createOrganization(@RequestBody OrganizationVM organizationVM) {
         Organization organization = new Organization();
         organization.setId(RandomUtil.uuid());
+        String code = organizationVM.getCode();
+        if (StringUtils.isEmpty(code)) {
+            code = organization.getId();
+        }
+        organization.setCode(code);
         organization.setName(organizationVM.getName());
         String parentId = organizationVM.getParentId();
         if (StringUtils.isNotEmpty(parentId)) {
@@ -59,6 +64,12 @@ public class OrganizationResource {
                     organization.setParent(parent);
                 });
             }
+
+            String code = organizationVM.getCode();
+            if (StringUtils.isEmpty(code)) {
+                code = organization.getId();
+            }
+            organization.setCode(code);
             organizationRepository.save(organization);
         });
     }

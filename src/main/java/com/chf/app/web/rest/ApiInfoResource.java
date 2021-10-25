@@ -27,6 +27,7 @@ import com.chf.app.domain.ApiInfo;
 import com.chf.app.repository.ApiInfoRepository;
 import com.chf.app.utils.RandomUtil;
 import com.chf.app.web.util.ResponseUtil;
+import com.chf.app.web.vm.ImportDataVM;
 
 @RestController
 @RequestMapping("/api/manager")
@@ -44,6 +45,25 @@ public class ApiInfoResource {
         apiInfo.setPath(apiInfoVM.getPath());
         apiInfo.setDescription(apiInfoVM.getDescription());
         apiInfoRepository.save(apiInfo);
+    }
+
+    @PostMapping("/api-info/import")
+    public void importApiInfos(@Valid @RequestBody ImportDataVM<ApiInfo> importDataVM) {
+        List<ApiInfo> apiInfoList = new ArrayList<>();
+        for (ApiInfo apiInfoVM : importDataVM.getDataList()) {
+
+            ApiInfo apiInfo = new ApiInfo();
+            apiInfo.setId(RandomUtil.uuid());
+            apiInfo.setMethod(apiInfoVM.getMethod().toLowerCase());
+            apiInfo.setPath(apiInfoVM.getPath());
+            apiInfo.setDescription(apiInfoVM.getDescription());
+        }
+
+        if (importDataVM.isAdded()) {
+        } else {
+            apiInfoRepository.deleteAll();
+        }
+        apiInfoRepository.saveAll(apiInfoList);
     }
 
     @PutMapping("/api-info")
