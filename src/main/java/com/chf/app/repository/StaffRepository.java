@@ -6,4 +6,5 @@ import com.chf.app.repository.support.JpaExtRepository;
 
 public interface StaffRepository extends JpaExtRepository<Staff, UserId> {
 
+    boolean existsByStaffId(String staffId);
 }

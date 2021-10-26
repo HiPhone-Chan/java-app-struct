@@ -2,6 +2,7 @@ package com.chf.app.web.rest;
 
 import java.util.List;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -38,7 +39,7 @@ public class StaffRoleResource {
 
         String code = staffRoleVM.getCode();
         if (StringUtils.isEmpty(code)) {
-            code = staffRole.getId();
+            code = RandomStringUtils.randomNumeric(12);
         }
         staffRole.setCode(code);
         staffRole.setName(staffRoleVM.getName());
