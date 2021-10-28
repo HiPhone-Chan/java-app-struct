@@ -1,5 +1,6 @@
 package com.chf.app.web.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -23,6 +24,7 @@ import com.chf.app.domain.StaffRole;
 import com.chf.app.repository.StaffRoleRepository;
 import com.chf.app.utils.RandomUtil;
 import com.chf.app.web.util.ResponseUtil;
+import com.chf.app.web.vm.ImportDataVM;
 
 @RestController
 @RequestMapping("/api/manager")
@@ -34,17 +36,25 @@ public class StaffRoleResource {
     @PostMapping("/role")
     @ResponseStatus(HttpStatus.CREATED)
     public void createStaffRole(@RequestBody StaffRole staffRoleVM) {
-        StaffRole staffRole = new StaffRole();
-        staffRole.setId(RandomUtil.uuid());
-
-        String code = staffRoleVM.getCode();
-        if (StringUtils.isEmpty(code)) {
-            code = RandomStringUtils.randomNumeric(12);
-        }
-        staffRole.setCode(code);
-        staffRole.setName(staffRoleVM.getName());
-        staffRole.setRemark(staffRoleVM.getRemark());
+        StaffRole staffRole = newStaffRole(staffRoleVM);
         staffRoleRepository.save(staffRole);
+    }
+
+    @PostMapping("/role/import")
+    public void importStaffRole(@RequestBody ImportDataVM<StaffRole> importDataVM) {
+        List<StaffRole> staffRoleList = new ArrayList<>();
+        for (StaffRole staffRoleVM : importDataVM.getDataList()) {
+
+            StaffRole staffRole = newStaffRole(staffRoleVM);
+            staffRoleList.add(staffRole);
+        }
+
+        if (importDataVM.isAdded()) {
+        } else {
+            staffRoleRepository.deleteAll();
+        }
+
+        staffRoleRepository.saveAll(staffRoleList);
     }
 
     @PutMapping("/role")
@@ -72,6 +82,20 @@ public class StaffRoleResource {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteStaffRole(@RequestParam String id) {
         staffRoleRepository.deleteById(id);
+    }
+
+    private StaffRole newStaffRole(StaffRole staffRoleVM) {
+        StaffRole staffRole = new StaffRole();
+        staffRole.setId(RandomUtil.uuid());
+
+        String code = staffRoleVM.getCode();
+        if (StringUtils.isEmpty(code)) {
+            code = RandomStringUtils.randomNumeric(12);
+        }
+        staffRole.setCode(code);
+        staffRole.setName(staffRoleVM.getName());
+        staffRole.setRemark(staffRoleVM.getRemark());
+        return staffRole;
     }
 
 }

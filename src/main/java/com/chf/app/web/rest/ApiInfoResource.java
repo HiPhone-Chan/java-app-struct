@@ -39,11 +39,7 @@ public class ApiInfoResource {
     @PostMapping("/api-info")
     @ResponseStatus(HttpStatus.CREATED)
     public void createApiInfo(@Valid @RequestBody ApiInfo apiInfoVM) {
-        ApiInfo apiInfo = new ApiInfo();
-        apiInfo.setId(RandomUtil.uuid());
-        apiInfo.setMethod(apiInfoVM.getMethod().toLowerCase());
-        apiInfo.setPath(apiInfoVM.getPath());
-        apiInfo.setDescription(apiInfoVM.getDescription());
+        ApiInfo apiInfo = newApiInfo(apiInfoVM);
         apiInfoRepository.save(apiInfo);
     }
 
@@ -51,12 +47,8 @@ public class ApiInfoResource {
     public void importApiInfos(@Valid @RequestBody ImportDataVM<ApiInfo> importDataVM) {
         List<ApiInfo> apiInfoList = new ArrayList<>();
         for (ApiInfo apiInfoVM : importDataVM.getDataList()) {
-
-            ApiInfo apiInfo = new ApiInfo();
-            apiInfo.setId(RandomUtil.uuid());
-            apiInfo.setMethod(apiInfoVM.getMethod().toLowerCase());
-            apiInfo.setPath(apiInfoVM.getPath());
-            apiInfo.setDescription(apiInfoVM.getDescription());
+            ApiInfo apiInfo = newApiInfo(apiInfoVM);
+            apiInfoList.add(apiInfo);
         }
 
         if (importDataVM.isAdded()) {
@@ -108,4 +100,12 @@ public class ApiInfoResource {
         apiInfoRepository.deleteById(id);
     }
 
+    private ApiInfo newApiInfo(ApiInfo apiInfoVM) {
+        ApiInfo apiInfo = new ApiInfo();
+        apiInfo.setId(RandomUtil.uuid());
+        apiInfo.setMethod(apiInfoVM.getMethod().toLowerCase());
+        apiInfo.setPath(apiInfoVM.getPath());
+        apiInfo.setDescription(apiInfoVM.getDescription());
+        return apiInfo;
+    }
 }

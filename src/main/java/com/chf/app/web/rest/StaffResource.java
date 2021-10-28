@@ -47,6 +47,7 @@ import com.chf.app.service.dto.AdminStaffDTO;
 import com.chf.app.service.dto.AdminUserDTO;
 import com.chf.app.service.dto.PasswordChangeDTO;
 import com.chf.app.web.util.ResponseUtil;
+import com.chf.app.web.vm.ImportDataVM;
 import com.chf.app.web.vm.ManagedUserVM;
 
 @RestController
@@ -77,6 +78,20 @@ public class StaffResource {
 
         Staff newUser = staffService.createStaff(userDTO);
         return newUser;
+    }
+
+    @PostMapping("/staff/import")
+    public void importStaff(@Valid @RequestBody ImportDataVM<AdminStaffDTO> importDataVM) {
+
+        for (AdminStaffDTO userDTO : importDataVM.getDataList()) {
+            if (userDTO.getId() != null) {
+                throw new ServiceException(ErrorCodeContants.BAD_PARAMETERS, "A new user cannot already have an ID");
+            } else if (userRepository.findOneByLogin(userDTO.getLogin().toLowerCase()).isPresent()) {
+//                throw new ServiceException(ErrorCodeContants.LOGIN_ALREADY_USED);
+            } else {
+                staffService.createStaff(userDTO);
+            }
+        }
     }
 
     @PutMapping("/staff")
