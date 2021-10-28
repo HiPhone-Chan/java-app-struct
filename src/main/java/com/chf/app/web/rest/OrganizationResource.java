@@ -3,6 +3,7 @@ package com.chf.app.web.rest;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -39,6 +40,11 @@ public class OrganizationResource {
     public void createOrganization(@RequestBody OrganizationVM organizationVM) {
         Organization organization = new Organization();
         organization.setId(RandomUtil.uuid());
+        String code = organizationVM.getCode();
+        if (StringUtils.isEmpty(code)) {
+            code = RandomStringUtils.randomNumeric(12);
+        }
+        organization.setCode(code);
         organization.setName(organizationVM.getName());
         String parentId = organizationVM.getParentId();
         if (StringUtils.isNotEmpty(parentId)) {
@@ -59,6 +65,12 @@ public class OrganizationResource {
                     organization.setParent(parent);
                 });
             }
+
+            String code = organizationVM.getCode();
+            if (StringUtils.isEmpty(code)) {
+                code = organization.getId();
+            }
+            organization.setCode(code);
             organizationRepository.save(organization);
         });
     }

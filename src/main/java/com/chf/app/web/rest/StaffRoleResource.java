@@ -2,6 +2,8 @@ package com.chf.app.web.rest;
 
 import java.util.List;
 
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +36,12 @@ public class StaffRoleResource {
     public void createStaffRole(@RequestBody StaffRole staffRoleVM) {
         StaffRole staffRole = new StaffRole();
         staffRole.setId(RandomUtil.uuid());
+
+        String code = staffRoleVM.getCode();
+        if (StringUtils.isEmpty(code)) {
+            code = RandomStringUtils.randomNumeric(12);
+        }
+        staffRole.setCode(code);
         staffRole.setName(staffRoleVM.getName());
         staffRole.setRemark(staffRoleVM.getRemark());
         staffRoleRepository.save(staffRole);
@@ -42,6 +50,12 @@ public class StaffRoleResource {
     @PutMapping("/role")
     public void updateStaffRole(@RequestBody StaffRole staffRoleVM) {
         staffRoleRepository.findById(staffRoleVM.getId()).ifPresent(staffRole -> {
+            String code = staffRoleVM.getCode();
+            if (StringUtils.isEmpty(code)) {
+                code = staffRole.getId();
+            }
+            staffRole.setCode(code);
+
             staffRole.setName(staffRoleVM.getName());
             staffRole.setRemark(staffRoleVM.getRemark());
             staffRoleRepository.save(staffRole);
