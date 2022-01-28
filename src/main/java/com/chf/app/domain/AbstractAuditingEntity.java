@@ -1,5 +1,6 @@
 package com.chf.app.domain;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 import javax.persistence.Column;
@@ -16,7 +17,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public abstract class AbstractAuditingEntity {
+public abstract class AbstractAuditingEntity implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @CreatedBy
     @Column(name = "created_by", nullable = false, length = 63, updatable = false)

@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,12 +23,13 @@ import com.chf.app.config.properties.ConfigProperties.Security.Authentication.Jw
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
 @Component
-public class TokenProvider implements InitializingBean {
+public class TokenProvider {
 
     private final Logger log = LoggerFactory.getLogger(TokenProvider.class);
 
@@ -39,31 +39,27 @@ public class TokenProvider implements InitializingBean {
 
     private Key key;
 
+    private final JwtParser jwtParser;
+
     private long tokenValidityInMilliseconds;
 
     private long tokenValidityInMillisecondsForRememberMe;
 
-    private final ConfigProperties configProperties;
-
     public TokenProvider(ConfigProperties configProperties) {
-        this.configProperties = configProperties;
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
         byte[] keyBytes;
         Jwt jwt = configProperties.getSecurity().getAuthentication().getJwt();
-        String secret64 = jwt.getBase64Secret();
-        if (StringUtils.isEmpty(secret64)) {
-            String secret = jwt.getSecret();
+        String secret = jwt.getBase64Secret();
+        if (StringUtils.isEmpty(secret)) {
+            secret = jwt.getSecret();
             log.warn(
                     "Warning: the JWT key used is not Base64-encoded. We recommend using the base64-secret key for optimum security.");
             keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         } else {
             log.debug("Using a Base64-encoded JWT secret key");
-            keyBytes = Base64.getDecoder().decode(secret64);
+            keyBytes = Base64.getDecoder().decode(secret);
         }
         this.key = Keys.hmacShaKeyFor(keyBytes);
+        jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
         this.tokenValidityInMilliseconds = 1000 * jwt.getTokenValidityInSeconds();
         this.tokenValidityInMillisecondsForRememberMe = 1000 * jwt.getTokenValidityInSecondsForRememberMe();
     }
@@ -85,10 +81,11 @@ public class TokenProvider implements InitializingBean {
     }
 
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        Claims claims = jwtParser.parseClaimsJws(token).getBody();
 
         Collection<? extends GrantedAuthority> authorities = Arrays
                 .stream(claims.get(AUTHORITIES_KEY).toString().split(AUTHORITIES_DELIMITER))
+                .filter(auth -> !auth.trim().isEmpty())
                 .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
 
         User principal = new User(claims.getSubject(), "", authorities);
@@ -98,7 +95,7 @@ public class TokenProvider implements InitializingBean {
 
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(authToken);
+            jwtParser.parseClaimsJws(authToken);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             log.info("Invalid JWT token.");

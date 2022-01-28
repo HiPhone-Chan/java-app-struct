@@ -10,8 +10,10 @@ import javax.persistence.Table;
 
 //操作日志
 @Entity
-@Table(name = "operation_log")
+@Table(name = "app_operation_log")
 public class OperationLog extends AbstractAuditingEntity {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     private String id;

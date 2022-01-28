@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,10 +63,18 @@ public class AccountResource {
 
     @PostMapping("/account/change-password")
     public void changePassword(@RequestBody PasswordChangeDTO passwordChangeDTO) {
-        if (!ManagedUserVM.checkPasswordLength(passwordChangeDTO.getNewPassword())) {
-            throw new ServiceException(ErrorCodeContants.INVALID_PASSWORD, "Password is short.");
+        if (isPasswordLengthInvalid(passwordChangeDTO.getNewPassword())) {
+            throw new ServiceException(ErrorCodeContants.INVALID_PASSWORD, "Password is invalid.");
         }
         userService.changePassword(passwordChangeDTO.getCurrentPassword(), passwordChangeDTO.getNewPassword());
+    }
+    
+    public static boolean isPasswordLengthInvalid(String password) {
+        return (
+            StringUtils.isEmpty(password) ||
+            password.length() < ManagedUserVM.PASSWORD_MIN_LENGTH ||
+            password.length() > ManagedUserVM.PASSWORD_MAX_LENGTH
+        );
     }
 
 }

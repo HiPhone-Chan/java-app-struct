@@ -15,27 +15,29 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.chf.app.utils.FileUtil;
 
 public interface ResponseUtil {
 
-    public static <X> ResponseEntity<X> wrapOrNotFound(Optional<X> maybeResponse) {
+    static <X> ResponseEntity<X> wrapOrNotFound(Optional<X> maybeResponse) {
         return wrapOrNotFound(maybeResponse, null);
     }
 
-    public static <X> ResponseEntity<X> wrapOrNotFound(Optional<X> maybeResponse, HttpHeaders header) {
+    static <X> ResponseEntity<X> wrapOrNotFound(Optional<X> maybeResponse, HttpHeaders header) {
         return maybeResponse.map(response -> ResponseEntity.ok().headers(header).body(response))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
-    
-    public static <X> ResponseEntity<List<X>> wrapPage(Page<X> page) {
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+
+    static <X> ResponseEntity<List<X>> wrapPage(Page<X> page) {
+        HttpHeaders headers = PaginationUtil
+                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
-    public static void outputMedia(String fileName, HttpServletResponse response) {
+    static void outputMedia(String fileName, HttpServletResponse response) {
         MediaType mediaType = getMediaType(fileName);
         if (mediaType == null) {
             mediaType = MediaType.APPLICATION_OCTET_STREAM;
@@ -46,7 +48,7 @@ public interface ResponseUtil {
         output(file, response);
     }
 
-    public static void output(File file, HttpServletResponse response) {
+    static void output(File file, HttpServletResponse response) {
         try (OutputStream os = response.getOutputStream(); InputStream is = new FileInputStream(file);) {
             IOUtils.copy(is, os);
         } catch (Exception e) {
@@ -54,7 +56,7 @@ public interface ResponseUtil {
         }
     }
 
-    public static MediaType getMediaType(String fileName) {
+    static MediaType getMediaType(String fileName) {
         String suffix = FileUtil.getSuffix(fileName);
         if (suffix != null) {
             switch (suffix) {

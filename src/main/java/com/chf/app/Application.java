@@ -16,12 +16,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.env.Environment;
 
+import com.chf.app.config.properties.ApplicationProperties;
 import com.chf.app.config.properties.ConfigProperties;
 import com.chf.app.constants.SystemConstants;
 import com.chf.app.utils.ProfileUtil;
 
 @SpringBootApplication
-@EnableConfigurationProperties({ ConfigProperties.class })
+@EnableConfigurationProperties({ ConfigProperties.class, ApplicationProperties.class })
 public class Application {
 
     private static final Logger log = LoggerFactory.getLogger(Application.class);
@@ -55,7 +56,8 @@ public class Application {
     }
 
     private static void logApplicationStartup(Environment env) {
-        String protocol = Optional.ofNullable(env.getProperty("server.ssl.key-store")).map(key -> "https").orElse("http");
+        String protocol = Optional.ofNullable(env.getProperty("server.ssl.key-store")).map(key -> "https")
+                .orElse("http");
         String serverPort = env.getProperty("server.port");
         String contextPath = Optional.ofNullable(env.getProperty("server.servlet.context-path"))
                 .filter(StringUtils::isNotBlank).orElse("/");
@@ -72,6 +74,7 @@ public class Application {
                         + "External: \t{}://{}:{}{}\n\t"
                         + "Profile(s): \t{}\n----------------------------------------------------------",
                 env.getProperty("spring.application.name"), protocol, serverPort, contextPath, protocol, hostAddress,
-                serverPort, contextPath, env.getActiveProfiles());
+                serverPort, contextPath,
+                env.getActiveProfiles().length == 0 ? env.getDefaultProfiles() : env.getActiveProfiles());
     }
 }

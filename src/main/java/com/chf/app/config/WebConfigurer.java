@@ -1,6 +1,10 @@
 package com.chf.app.config;
 
+import static java.net.URLDecoder.decode;
+
+import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.EnumSet;
 
 import javax.servlet.DispatcherType;
@@ -10,7 +14,6 @@ import javax.servlet.ServletException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.server.MimeMappings;
 import org.springframework.boot.web.server.WebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
@@ -19,7 +22,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
-import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
@@ -68,15 +70,35 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
 
     @Override
     public void customize(WebServerFactory server) {
-        if (server instanceof ConfigurableServletWebServerFactory) {
-            MimeMappings mappings = new MimeMappings(MimeMappings.DEFAULT);
-            // IE issue, see https://github.com/jhipster/generator-jhipster/pull/711
-            mappings.add("html", MediaType.TEXT_HTML_VALUE + ";charset=" + StandardCharsets.UTF_8.name().toLowerCase());
-            // CloudFoundry issue, see https://github.com/cloudfoundry/gorouter/issues/64
+        // When running in an IDE or with ./mvnw spring-boot:run, set location of the
+        // static web assets.
+        setLocationForStaticAssets(server);
+    }
 
+    private void setLocationForStaticAssets(WebServerFactory server) {
+        if (server instanceof ConfigurableServletWebServerFactory) {
             ConfigurableServletWebServerFactory servletWebServer = (ConfigurableServletWebServerFactory) server;
-            servletWebServer.setMimeMappings(mappings);
+            File root;
+            String prefixPath = resolvePathPrefix();
+            root = new File(prefixPath + "target/classes/static/");
+            if (root.exists() && root.isDirectory()) {
+                servletWebServer.setDocumentRoot(root);
+            }
         }
+    }
+
+    /**
+     * Resolve path prefix to static resources.
+     */
+    private String resolvePathPrefix() {
+        String fullExecutablePath = decode(this.getClass().getResource("").getPath(), StandardCharsets.UTF_8);
+        String rootPath = Paths.get(".").toUri().normalize().getPath();
+        String extractedPath = fullExecutablePath.replace(rootPath, "");
+        int extractionEndIndex = extractedPath.indexOf("target/");
+        if (extractionEndIndex <= 0) {
+            return "";
+        }
+        return extractedPath.substring(0, extractionEndIndex);
     }
 
     private void initCachingHttpHeadersFilter(ServletContext servletContext, EnumSet<DispatcherType> disps) {
@@ -98,7 +120,6 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
             source.registerCorsConfiguration("/api/**", config);
             source.registerCorsConfiguration("/management/**", config);
             source.registerCorsConfiguration("/v3/api-docs", config);
-            source.registerCorsConfiguration("/swagger-resources", config);
             source.registerCorsConfiguration("/swagger-ui/**", config);
         }
         return new CorsFilter(source);

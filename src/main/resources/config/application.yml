@@ -56,6 +56,10 @@ spring:
   main:
     banner-mode: 'off'
     allow-bean-definition-overriding: true
+    allow-circular-references: true
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
   servlet:
     multipart:
       enabled: true
@@ -82,12 +86,12 @@ server:
       cookie:
         http-only: true
 
-app:
+config:
   clientApp:
     name: 'app'
   api-docs:
-    default-include-pattern: ${server.servlet.context-path:}/api/.*
-    management-include-pattern: ${server.servlet.context-path:}/management/.*
+    default-include-pattern: ${server.servlet.context-path:}/api/**
+    management-include-pattern: ${server.servlet.context-path:}/management/**
     title: API
     description: API documentation
     version: 0.0.1
@@ -100,3 +104,4 @@ app:
   security:
     content-security-policy: "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
  
+# app:

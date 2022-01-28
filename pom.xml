@@ -2,33 +2,36 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.chf</groupId>
   <artifactId>app-struct</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
   <packaging>jar</packaging>
 
   <properties>
     <java.version>11</java.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <start-class>com.chf.app.Application</start-class>
-    <spring-boot.version>2.4.7</spring-boot.version>
+    <base-package>com.chf.app</base-package>
+    <start-class>${base-package}.Application</start-class>
+    <spring-boot.version>2.6.3</spring-boot.version>
+    <springdoc.version>1.6.2</springdoc.version>
+    <problem-spring.version>0.27.0</problem-spring.version>
     <jjwt.version>0.11.2</jjwt.version>
     <mapstruct.version>1.4.2.Final</mapstruct.version>
-    <swagger.version>3.0.0</swagger.version>
-    <testcontainers.version>1.14.3</testcontainers.version>
-    <archunit-junit5.version>0.19.0</archunit-junit5.version>
+    <testcontainers.version>1.16.3</testcontainers.version>
+    <archunit-junit5.version>0.22.0</archunit-junit5.version>
     <!-- Plugin versions -->
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
-    <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-    <maven-war-plugin.version>3.2.2</maven-war-plugin.version>
-    <maven-enforcer-plugin.version>3.0.0-M3</maven-enforcer-plugin.version>
-    <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
+    <maven-compiler-plugin.version>3.9.0</maven-compiler-plugin.version>
+    <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
+    <maven-enforcer-plugin.version>3.0.0</maven-enforcer-plugin.version>
+    <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
     <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
     <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
     <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
     <lifecycle-mapping.version>1.0.0</lifecycle-mapping.version>
+    <openapi-generator-maven-plugin.version>5.3.1</openapi-generator-maven-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -108,7 +111,7 @@
     <dependency>
       <groupId>org.zalando</groupId>
       <artifactId>problem-spring-web</artifactId>
-      <version>0.24.0</version>
+      <version>${problem-spring.version}</version>
     </dependency>
 
     <!-- jwt -->
@@ -185,11 +188,11 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- swagger -->
+    <!-- open api -->
     <dependency>
-      <groupId>io.springfox</groupId>
-      <artifactId>springfox-boot-starter</artifactId>
-      <version>${swagger.version}</version>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-webmvc-core</artifactId>
+      <version>${springdoc.version}</version>
     </dependency>
 
     <!-- test -->
@@ -209,12 +212,6 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.junit.vintage</groupId>
-          <artifactId>junit-vintage-engine</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -272,6 +269,11 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
       </plugin>
 
     </plugins>
@@ -360,7 +362,7 @@
               <requireJavaVersion>
                 <message>You are running an incompatible version of Java.
                   Supports JDK 8 to 16.</message>
-                <version>[1.8,17)</version>
+                <version>[11,)</version>
               </requireJavaVersion>
             </rules>
           </configuration>
@@ -464,6 +466,33 @@
             <fork>true</fork>
             <!-- Enable the line below to have remote debugging of your application on port 5005 <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</jvmArguments> -->
           </configuration>
+        </plugin>
+
+        <!-- Plugin that provides API-first development using openapi-generator to generate Spring-MVC endpoint stubs at compile time from an OpenAPI definition file -->
+        <plugin>
+          <groupId>org.openapitools</groupId>
+          <artifactId>openapi-generator-maven-plugin</artifactId>
+          <version>${openapi-generator-maven-plugin.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>generate</goal>
+              </goals>
+              <configuration>
+                <inputSpec>${project.basedir}/src/main/resources/swagger/api.yml</inputSpec>
+                <generatorName>spring</generatorName>
+                <apiPackage>${base-package}.web.api</apiPackage>
+                <modelPackage>${base-package}.service.api.dto</modelPackage>
+                <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
+                <importMappings>Problem=org.zalando.problem.Problem</importMappings>
+                <skipValidateSpec>false</skipValidateSpec>
+                <configOptions>
+                  <delegatePattern>true</delegatePattern>
+                  <title>app</title>
+                </configOptions>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>

@@ -44,14 +44,13 @@ import com.chf.app.service.dto.AdminUserDTO;
 import com.chf.app.service.dto.PasswordChangeDTO;
 import com.chf.app.service.dto.UserDTO;
 import com.chf.app.web.util.ResponseUtil;
-import com.chf.app.web.vm.ManagedUserVM;
 
 @RestController
 @RequestMapping("/api/admin")
 public class UserResource {
 
     private static final List<String> ALLOWED_ORDERED_PROPERTIES = Collections
-            .unmodifiableList(Arrays.asList("id", "login", "firstName", "lastName", "email", "activated", "langKey",
+            .unmodifiableList(Arrays.asList("id", "login", "nickName", "mobile", "email", "activated", "langKey",
                     "createdBy", "createdDate", "lastModifiedBy", "lastModifiedDate"));
     private final Logger log = LoggerFactory.getLogger(UserResource.class);
 
@@ -92,8 +91,8 @@ public class UserResource {
 
     @PostMapping("/user/change-password/{login:" + SystemConstants.LOGIN_REGEX + "}")
     public void changePassword(@PathVariable String login, @RequestBody PasswordChangeDTO passwordChangeDTO) {
-        if (!ManagedUserVM.checkPasswordLength(passwordChangeDTO.getNewPassword())) {
-            throw new ServiceException(ErrorCodeContants.INVALID_PASSWORD, "Password is short.");
+        if (AccountResource.isPasswordLengthInvalid(passwordChangeDTO.getNewPassword())) {
+            throw new ServiceException(ErrorCodeContants.INVALID_PASSWORD, "Password is invalid.");
         }
         User subordinate = userRepository.findOneByLogin(login).orElseThrow();
         userService.changePasswordBySuperior(subordinate, passwordChangeDTO.getCurrentPassword(),

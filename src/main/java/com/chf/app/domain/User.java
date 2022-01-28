@@ -28,10 +28,12 @@ import com.chf.app.constants.SystemConstants;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "user")
+@Table(name = "app_user")
 @Inheritance(strategy = InheritanceType.JOINED)
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class User extends AbstractAuditingEntity {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -70,7 +72,7 @@ public class User extends AbstractAuditingEntity {
     @Column(length = 63, unique = true)
     private String email;
 
-    @Column(length = 63)
+    @Column(length = 63, unique = true)
     private String mobile;
 
     @NotNull
@@ -113,7 +115,7 @@ public class User extends AbstractAuditingEntity {
 
     @JsonIgnore
     @ManyToMany
-    @JoinTable(name = "user_authority", joinColumns = {
+    @JoinTable(name = "app_user_authority", joinColumns = {
             @JoinColumn(name = "user_id", referencedColumnName = "id") }, inverseJoinColumns = {
                     @JoinColumn(name = "authority_name", referencedColumnName = "name") })
     @BatchSize(size = 20)
