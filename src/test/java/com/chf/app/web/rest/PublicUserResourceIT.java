@@ -19,10 +19,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.chf.app.IntegrationTest;
 import com.chf.app.constants.AuthoritiesConstants;
 import com.chf.app.domain.User;
 import com.chf.app.repository.UserRepository;
-import com.chf.app.web.IntegrationTest;
 
 /**
  * Integration tests for the {@link UserResource} REST controller.

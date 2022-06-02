@@ -81,8 +81,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .httpBasic()
                 .and()
-                .apply(new JWTConfigurer(tokenProvider));
+                .apply(securityConfigurerAdapter());
         // @formatter:on
+    }
+
+    private JWTConfigurer securityConfigurerAdapter() {
+        return new JWTConfigurer(tokenProvider);
     }
 
 }

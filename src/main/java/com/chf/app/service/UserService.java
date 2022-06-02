@@ -71,7 +71,7 @@ public class UserService {
         user.setImageUrl(userDTO.getImageUrl());
         String langKey = userDTO.getLangKey();
         if (StringUtils.isEmpty(langKey)) {
-            user.setLangKey(SystemConstants.LANG);
+            user.setLangKey(SystemConstants.DEFAULT_LANGUAGE);
         } else {
             user.setLangKey(langKey);
         }
@@ -152,6 +152,7 @@ public class UserService {
         });
     }
 
+    @Transactional
     public void changePassword(String currentClearTextPassword, String newPassword) {
         SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneByLogin).ifPresent(user -> {
             String currentEncryptedPassword = user.getPassword();
@@ -191,6 +192,7 @@ public class UserService {
         return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithAuthoritiesByLogin);
     }
 
+    @Transactional(readOnly = true)
     public List<String> getAuthorities() {
         return authorityRepository.findAll().stream().map(Authority::getName).collect(Collectors.toList());
     }

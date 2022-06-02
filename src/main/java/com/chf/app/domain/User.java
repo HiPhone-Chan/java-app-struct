@@ -1,7 +1,9 @@
 package com.chf.app.domain;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -20,6 +22,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -31,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name = "app_user")
 @Inheritance(strategy = InheritanceType.JOINED)
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class User extends AbstractAuditingEntity {
+public class User extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -42,58 +45,55 @@ public class User extends AbstractAuditingEntity {
     @NotNull
     @Pattern(regexp = SystemConstants.LOGIN_REGEX)
     @Size(min = 1, max = 50)
-    @Column(length = 63, unique = true, nullable = false)
+    @Column(length = 50, unique = true, nullable = false)
     private String login;
 
     @JsonIgnore
     @NotNull
     @Size(min = 6, max = 60)
-    @Column(name = "password_hash", length = 63)
+    @Column(name = "password_hash", length = 60, nullable = false)
     private String password;
 
-    @JsonIgnore
-    @Column(name = "token_hash", length = 63)
-    private String token;
-
     @Size(max = 50)
-    @Column(name = "nick_name", length = 63)
+    @Column(name = "nick_name", length = 50)
     private String nickName;
 
     @Size(max = 50)
-    @Column(name = "first_name", length = 63)
+    @Column(name = "first_name", length = 50)
     private String firstName;
 
     @Size(max = 50)
-    @Column(name = "last_name", length = 63)
+    @Column(name = "last_name", length = 50)
     private String lastName;
 
     @Email
-    @Size(min = 5, max = 100)
-    @Column(length = 63, unique = true)
+    @Size(min = 5, max = 254)
+    @Column(length = 254, unique = true)
     private String email;
 
-    @Column(length = 63, unique = true)
+    @Size(min = 8, max = 20)
+    @Column(length = 20, unique = true)
     private String mobile;
 
     @NotNull
     @Column(nullable = false)
     private boolean activated = false;
 
-    @Size(min = 2, max = 5)
-    @Column(name = "lang_key", length = 7)
-    private String langKey = SystemConstants.LANG;
+    @Size(min = 2, max = 10)
+    @Column(name = "lang_key", length = 10)
+    private String langKey = SystemConstants.DEFAULT_LANGUAGE;
 
     @Size(max = 256)
-    @Column(name = "image_url", length = 255)
+    @Column(name = "image_url", length = 256)
     private String imageUrl;
 
     @Size(max = 20)
-    @Column(name = "activation_key", length = 15)
+    @Column(name = "activation_key", length = 20)
     @JsonIgnore
     private String activationKey;
 
     @Size(max = 20)
-    @Column(name = "reset_key", length = 15)
+    @Column(name = "reset_key", length = 20)
     @JsonIgnore
     private String resetKey;
 
@@ -135,7 +135,7 @@ public class User extends AbstractAuditingEntity {
 
     // Lowercase the login before saving it in database
     public void setLogin(String login) {
-        this.login = login;
+        this.login = StringUtils.lowerCase(login, Locale.ENGLISH);
     }
 
     public String getPassword() {
@@ -144,14 +144,6 @@ public class User extends AbstractAuditingEntity {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
     }
 
     public String getNickName() {

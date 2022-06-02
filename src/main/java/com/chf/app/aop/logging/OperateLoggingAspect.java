@@ -26,7 +26,6 @@ import com.chf.app.domain.OperationLog;
 import com.chf.app.repository.OperationLogRepository;
 
 // 操作日志
-
 @Aspect
 public class OperateLoggingAspect {
 

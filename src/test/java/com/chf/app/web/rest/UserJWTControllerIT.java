@@ -17,9 +17,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.chf.app.IntegrationTest;
 import com.chf.app.domain.User;
 import com.chf.app.repository.UserRepository;
-import com.chf.app.web.IntegrationTest;
 import com.chf.app.web.vm.LoginVM;
 
 /**

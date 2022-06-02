@@ -1,6 +1,7 @@
 package com.chf.app.domain;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,7 +23,7 @@ public class Authority implements Serializable {
     @NotNull
     @Size(min = 0, max = 50)
     @Id
-    @Column(length = 31)
+    @Column(length = 50)
     private String name;
 
     public String getName() {
@@ -38,17 +39,15 @@ public class Authority implements Serializable {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof Authority)) {
             return false;
         }
-
-        Authority authority = (Authority) o;
-        return (name == null) ? (authority.name == null) : name.equals(authority.name);
+        return Objects.equals(name, ((Authority) o).name);
     }
 
     @Override
     public int hashCode() {
-        return name != null ? name.hashCode() : 0;
+        return Objects.hashCode(name);
     }
 
     @Override

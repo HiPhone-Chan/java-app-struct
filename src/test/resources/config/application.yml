@@ -39,6 +39,9 @@ spring:
   main:
     banner-mode: 'off'
     allow-bean-definition-overriding: true
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
   servlet:
     multipart:
       enabled: true
@@ -60,7 +63,7 @@ server:
   port: 10344
   address: localhost
 
-app:
+config:
   clientApp:
     name: 'demoApp'
   security:

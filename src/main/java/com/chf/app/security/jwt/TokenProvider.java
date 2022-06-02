@@ -20,13 +20,17 @@ import org.springframework.stereotype.Component;
 
 import com.chf.app.config.properties.ConfigProperties;
 import com.chf.app.config.properties.ConfigProperties.Security.Authentication.Jwt;
+import com.chf.app.management.SecurityMetersService;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 
 @Component
 public class TokenProvider {
@@ -37,6 +41,8 @@ public class TokenProvider {
 
     private static final String AUTHORITIES_DELIMITER = ",";
 
+    private static final String INVALID_JWT_TOKEN = "Invalid JWT token.";
+
     private Key key;
 
     private final JwtParser jwtParser;
@@ -45,7 +51,9 @@ public class TokenProvider {
 
     private long tokenValidityInMillisecondsForRememberMe;
 
-    public TokenProvider(ConfigProperties configProperties) {
+    private final SecurityMetersService securityMetersService;
+
+    public TokenProvider(ConfigProperties configProperties, SecurityMetersService securityMetersService) {
         byte[] keyBytes;
         Jwt jwt = configProperties.getSecurity().getAuthentication().getJwt();
         String secret = jwt.getBase64Secret();
@@ -62,6 +70,8 @@ public class TokenProvider {
         jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
         this.tokenValidityInMilliseconds = 1000 * jwt.getTokenValidityInSeconds();
         this.tokenValidityInMillisecondsForRememberMe = 1000 * jwt.getTokenValidityInSecondsForRememberMe();
+
+        this.securityMetersService = securityMetersService;
     }
 
     public String createToken(Authentication authentication, Boolean rememberMe) {
@@ -85,8 +95,7 @@ public class TokenProvider {
 
         Collection<? extends GrantedAuthority> authorities = Arrays
                 .stream(claims.get(AUTHORITIES_KEY).toString().split(AUTHORITIES_DELIMITER))
-                .filter(auth -> !auth.trim().isEmpty())
-                .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+                .filter(auth -> !auth.trim().isEmpty()).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
 
         User principal = new User(claims.getSubject(), "", authorities);
 
@@ -97,9 +106,26 @@ public class TokenProvider {
         try {
             jwtParser.parseClaimsJws(authToken);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            log.info("Invalid JWT token.");
-            log.trace("Invalid JWT token trace.", e);
+        } catch (ExpiredJwtException e) {
+            this.securityMetersService.trackTokenExpired();
+
+            log.trace(INVALID_JWT_TOKEN, e);
+        } catch (UnsupportedJwtException e) {
+            this.securityMetersService.trackTokenUnsupported();
+
+            log.trace(INVALID_JWT_TOKEN, e);
+        } catch (MalformedJwtException e) {
+            this.securityMetersService.trackTokenMalformed();
+
+            log.trace(INVALID_JWT_TOKEN, e);
+        } catch (SignatureException e) {
+            this.securityMetersService.trackTokenInvalidSignature();
+
+            log.trace(INVALID_JWT_TOKEN, e);
+        } catch (IllegalArgumentException e) {
+            // TODO: should we let it bubble (no catch), to avoid defensive programming and
+            // follow the fail-fast principle?
+            log.error("Token validation error {}", e.getMessage());
         }
         return false;
     }

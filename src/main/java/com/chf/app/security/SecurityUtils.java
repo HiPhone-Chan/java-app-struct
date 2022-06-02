@@ -61,10 +61,6 @@ public final class SecurityUtils {
                 .orElse(false);
     }
 
-    public static boolean isAdmin() {
-        return hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
-    }
-
     /**
      * If the current user has a specific authority (security role).
      *

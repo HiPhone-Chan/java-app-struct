@@ -21,8 +21,6 @@ import com.chf.app.exception.ServiceException;
 @Aspect
 public class LoggingAspect {
 
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
-
     private final Environment env;
 
     public LoggingAspect(Environment env) {
@@ -43,7 +41,19 @@ public class LoggingAspect {
      */
     @Pointcut("within(" + BASE_PACKAGE + ".repository..*) || within(" + BASE_PACKAGE + ".service..*) || within("
             + BASE_PACKAGE + ".web..*)")
-    public void loggingPointcut() {
+    public void applicationPackagePointcut() {
+        // Method is empty as this is just a Pointcut, the implementations are in the
+        // advices.
+    }
+
+    /**
+     * Retrieves the {@link Logger} associated to the given {@link JoinPoint}.
+     *
+     * @param joinPoint join point we want the logger for.
+     * @return {@link Logger} associated to the given {@link JoinPoint}.
+     */
+    private Logger logger(JoinPoint joinPoint) {
+        return LoggerFactory.getLogger(joinPoint.getSignature().getDeclaringTypeName());
     }
 
     /**
@@ -52,18 +62,18 @@ public class LoggingAspect {
      * @param joinPoint join point for advice
      * @param e         exception
      */
-    @AfterThrowing(pointcut = "springBeanPointcut() && loggingPointcut()", throwing = "e")
+    @AfterThrowing(pointcut = "applicationPackagePointcut() && springBeanPointcut()", throwing = "e")
     public void logAfterThrowing(JoinPoint joinPoint, Throwable e) {
+        Logger log = logger(joinPoint);
         if (env.acceptsProfiles(Profiles.of(PROFILE_DEVELOPMENT))) {
-            log.error("Exception in {}.{}() with cause = \'{}\' and exception = \'{}\'",
-                    joinPoint.getSignature().getDeclaringTypeName(), joinPoint.getSignature().getName(),
+            log.error("Exception in {}() with cause = '{}' and exception = '{}'", joinPoint.getSignature().getName(),
                     e.getCause() != null ? e.getCause() : "NULL", e.getMessage(), e);
         } else {
             if (e instanceof ServiceException) {
                 log.warn("Service Exception in {} - {}.", ((ServiceException) e).getCode(), e.getMessage());
             } else {
-                log.error("Exception in {}.{} () with cause = {}", joinPoint.getSignature().getDeclaringTypeName(),
-                        joinPoint.getSignature().getName(), e.getCause() != null ? e.getCause() : "NULL");
+                log.error("Exception in {}() with cause = {}", joinPoint.getSignature().getName(),
+                        e.getCause() != null ? e.getCause() : "NULL");
             }
         }
     }
@@ -75,22 +85,22 @@ public class LoggingAspect {
      * @return result
      * @throws Throwable throws IllegalArgumentException
      */
-    @Around("springBeanPointcut() && loggingPointcut()")
+    @Around("applicationPackagePointcut() && springBeanPointcut()")
     public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
+        Logger log = logger(joinPoint);
         if (log.isDebugEnabled()) {
-            log.debug("Enter: {}.{}() with argument[s] = {}", joinPoint.getSignature().getDeclaringTypeName(),
-                    joinPoint.getSignature().getName(), Arrays.toString(joinPoint.getArgs()));
+            log.debug("Enter: {}() with argument[s] = {}", joinPoint.getSignature().getName(),
+                    Arrays.toString(joinPoint.getArgs()));
         }
         try {
             Object result = joinPoint.proceed();
             if (log.isDebugEnabled()) {
-                log.debug("Exit: {}.{}() with result = {}", joinPoint.getSignature().getDeclaringTypeName(),
-                        joinPoint.getSignature().getName(), result);
+                log.debug("Exit: {}() with result = {}", joinPoint.getSignature().getName(), result);
             }
             return result;
         } catch (IllegalArgumentException e) {
-            log.error("Illegal argument: {} in {}.{}()", Arrays.toString(joinPoint.getArgs()),
-                    joinPoint.getSignature().getDeclaringTypeName(), joinPoint.getSignature().getName());
+            log.error("Illegal argument: {} in {}()", Arrays.toString(joinPoint.getArgs()),
+                    joinPoint.getSignature().getName());
 
             throw e;
         }

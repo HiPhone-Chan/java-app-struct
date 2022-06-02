@@ -3,9 +3,9 @@ package com.chf.app.web.vm;
 import javax.validation.constraints.Size;
 
 import com.chf.app.domain.User;
-import com.chf.app.service.dto.UserDTO;
+import com.chf.app.service.dto.AdminUserDTO;
 
-public class ManagedUserVM extends UserDTO {
+public class ManagedUserVM extends AdminUserDTO {
 
     public static final int PASSWORD_MIN_LENGTH = 4;
 

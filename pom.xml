@@ -14,12 +14,12 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <base-package>com.chf.app</base-package>
     <start-class>${base-package}.Application</start-class>
-    <spring-boot.version>2.6.3</spring-boot.version>
-    <springdoc.version>1.6.2</springdoc.version>
+    <spring-boot.version>2.6.7</spring-boot.version>
+    <springdoc.version>1.6.8</springdoc.version>
     <problem-spring.version>0.27.0</problem-spring.version>
-    <jjwt.version>0.11.2</jjwt.version>
+    <jjwt.version>0.11.5</jjwt.version>
     <mapstruct.version>1.4.2.Final</mapstruct.version>
-    <testcontainers.version>1.16.3</testcontainers.version>
+    <testcontainers.version>1.17.2</testcontainers.version>
     <archunit-junit5.version>0.22.0</archunit-junit5.version>
     <!-- Plugin versions -->
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
@@ -31,7 +31,7 @@
     <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
     <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
     <lifecycle-mapping.version>1.0.0</lifecycle-mapping.version>
-    <openapi-generator-maven-plugin.version>5.3.1</openapi-generator-maven-plugin.version>
+    <openapi-generator-maven-plugin.version>5.4.0</openapi-generator-maven-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -95,6 +95,12 @@
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-jcache</artifactId>
+    </dependency>
+
+    <!-- validator -->
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
     </dependency>
 
     <!-- secure -->
