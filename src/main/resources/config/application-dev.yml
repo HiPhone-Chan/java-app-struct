@@ -49,7 +49,7 @@ config:
   # CORS is only enabled by default with the "dev" profile
   cors:
     # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
-    allowed-origins: 'http://localhost:8083,http://localhost:9527'
+    allowed-origins: 'http://localhost:8083,http://localhost:9527,http://localhost:9000'
     allowed-methods: '*'
     allowed-headers: '*'
     exposed-headers: 'Authorization,Link,X-Total-Count'

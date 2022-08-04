@@ -277,10 +277,10 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
 
-      <plugin>
+      <!-- <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
-      </plugin>
+      </plugin> -->
 
     </plugins>
 
@@ -475,7 +475,7 @@
         </plugin>
 
         <!-- Plugin that provides API-first development using openapi-generator to generate Spring-MVC endpoint stubs at compile time from an OpenAPI definition file -->
-        <plugin>
+       <!--  <plugin>
           <groupId>org.openapitools</groupId>
           <artifactId>openapi-generator-maven-plugin</artifactId>
           <version>${openapi-generator-maven-plugin.version}</version>
@@ -499,7 +499,7 @@
               </configuration>
             </execution>
           </executions>
-        </plugin>
+        </plugin> -->
       </plugins>
     </pluginManagement>
   </build>

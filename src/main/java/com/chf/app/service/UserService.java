@@ -81,8 +81,10 @@ public class UserService {
         user.setResetDate(Instant.now());
         user.setActivated(true);
         if (userDTO.getAuthorities() != null) {
-            Set<Authority> authorities = userDTO.getAuthorities().stream().map(authorityRepository::findById)
-                    .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toSet());
+            Set<Authority> authorities = userDTO.getAuthorities().stream()
+                    .filter(authority -> !AuthoritiesConstants.ADMIN.equals(authority))
+                    .map(authorityRepository::findById).filter(Optional::isPresent).map(Optional::get)
+                    .collect(Collectors.toSet());
             user.setAuthorities(authorities);
         }
         userRepository.save(user);

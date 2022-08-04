@@ -101,7 +101,8 @@ public class UserResource {
 
     @GetMapping("/users")
     public ResponseEntity<List<AdminUserDTO>> getUsers(Pageable pageable,
-            @RequestParam(name = "authority", required = false) String authority) {
+            @RequestParam(name = "authority", required = false) String authority,
+            @RequestParam(name = "search", required = false) String search) {
         log.debug("REST request to get all User for an admin");
         if (!onlyContainsAllowedProperties(pageable)) {
             return ResponseEntity.badRequest().build();
@@ -110,10 +111,21 @@ public class UserResource {
         Specification<User> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> andList = new ArrayList<>();
 
-            if (!StringUtils.isEmpty(authority)) {
+            if (StringUtils.isNotEmpty(authority)) {
                 SetJoin<User, Authority> setJoin = root.joinSet("authorities", JoinType.LEFT);
                 List<String> authorities = Arrays.asList(authority);
                 andList.add(setJoin.get("name").in(authorities));
+            }
+
+            if (StringUtils.isNotEmpty(search)) {
+                List<Predicate> orList = new ArrayList<>();
+                String like = "%" + search + "%";
+
+                orList.add(criteriaBuilder.like(root.get("login"), like));
+                orList.add(criteriaBuilder.like(root.get("nickName"), like));
+                orList.add(criteriaBuilder.like(root.get("mobile"), like));
+
+                andList.add(criteriaBuilder.or(orList.toArray(new Predicate[orList.size()])));
             }
 
             query.where(criteriaBuilder.and(andList.toArray(new Predicate[andList.size()])));
